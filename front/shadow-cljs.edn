@@ -1,0 +1,14 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src/dev"
+  "src/main"
+  "src/test"]
+
+ :dependencies
+ []
+ 
+ :dev-http {8081 "public"}
+
+ :builds
+ {:frontend {:target  :browser
+             :modules {:main {:init-fn feedme.frontend.app/init}}}}}
