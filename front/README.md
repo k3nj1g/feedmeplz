@@ -13,3 +13,7 @@
 ## Установка shadow-cljs
 
 `npm install -g shadow-cljs`
+
+## Установка зависимостей nodejs
+
+`npm install`
