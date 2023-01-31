@@ -4,9 +4,13 @@
 
 `cd ~`
 
-`curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash - &&\`
+`sudo apt-get install curl`
 
-`sudo apt-get install -y nodejs`
+`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash`
+
+перезапустить терминал
+
+`nvm install --lts`
 
 `node -v`
 
@@ -17,3 +21,9 @@
 ## Установка зависимостей nodejs
 
 `npm install`
+
+## Запуск билдера TailwindCss
+
+Следит за используемыми классами, добавляет используемые и удаляем ненужные
+
+`npx tailwindcss -i ./resources/public/css/main.css -o ./resources/public/css/tailwind.css --watch`

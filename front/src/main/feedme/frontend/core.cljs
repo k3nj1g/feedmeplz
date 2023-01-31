@@ -12,7 +12,7 @@
     (enable-console-print!)
     (println "dev mode")))
 
-(defn mount-root []
+(defn ^:dev/after-load mount-root []
   (rf/clear-subscription-cache!)
   (rdom/render [view/navbar]
                (gdom/getElement "app")))
