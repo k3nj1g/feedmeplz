@@ -1,7 +1,9 @@
 {:paths   ["src" "resources"]
  :deps    {org.clojure/clojure {:mvn/version "1.11.1"}
            http-kit/http-kit   {:mvn/version "2.3.0"}
-           compojure/compojure {:mvn/version "1.6.1"}}
+           compojure/compojure {:mvn/version "1.6.1"}
+           lynxeyes/dotenv     {:mvn/version "1.1.0"}
+           kwrooijen/gungnir   {:mvn/version "0.0.2-SNAPSHOT"}}
  :aliases {:dev   {:extra-paths ["dev"]
                    :extra-deps  {ring/ring-devel {:mvn/version "1.8.1"}
                                  ring/ring-mock  {:mvn/version "0.4.0"}}}

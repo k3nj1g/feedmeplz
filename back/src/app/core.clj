@@ -18,7 +18,7 @@
 (defn -main
   "Start the application server and run the application"
   [& [port]]
-  (let [port' (Integer/parseInt (or port "8080")) ]
+  (let [port' (Integer/parseInt (or port "8088")) ]
     (println "INFO: Starting server on port: " port')
 
     (reset! app-server-instance
