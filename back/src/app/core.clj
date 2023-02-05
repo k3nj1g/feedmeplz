@@ -1,28 +1,24 @@
 (ns app.core
   (:gen-class)
 
-  (:require [org.httpkit.server :as    app-server]
-            [compojure.core     :refer [defroutes GET]]
-            [compojure.route    :refer [not-found]]
-            [ring.util.response :refer [response]]
-            
-            [app.handler :as handler]))
+  (:require [org.httpkit.server :as app-server]
+
+            [app.routes  :as routes]
+            [app.db.core :as db]))
 
 (defonce app-server-instance (atom nil))
-
-(defroutes app-routes
-  (GET "/" [] handler/main)
-  
-  (not-found "Page not found"))
 
 (defn -main
   "Start the application server and run the application"
   [& [port]]
-  (let [port' (Integer/parseInt (or port "8088")) ]
+  (let [port' (Integer/parseInt (or port "8088"))]
     (println "INFO: Starting server on port: " port')
 
     (reset! app-server-instance
-            (app-server/run-server #'app-routes {:port port'}))))
+            (app-server/run-server #'routes/app {:port port'}))
+
+    (db/init-connection)
+    (db/run-migrations)))
 
 (defn stop-app-server
   "Gracefully shutdown the server, waiting 100ms"
