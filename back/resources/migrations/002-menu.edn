@@ -1,0 +1,10 @@
+{:up [[:table/create {:table :menu}
+       [:column/add
+        [:id {:primary-key true} :serial]
+        [:fk-category {:references :category/id} :int]
+        [:title {:unique true} :string]
+        [:price :float]
+        [:kcal {:optional true} :float]
+        [:weight {:optional true} :float]
+        [:gungnir/timestamps]]]]
+ :down [[:table/drop :menu]]}
