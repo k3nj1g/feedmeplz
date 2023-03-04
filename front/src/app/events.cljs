@@ -1,7 +1,7 @@
-(ns feedme.frontend.events
+(ns app.events
   (:require [re-frame.core :as rf]
             
-            [feedme.frontend.db :as db]))
+            [app.db :as db]))
 
 (rf/reg-event-db
  ::initialize-db

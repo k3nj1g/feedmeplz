@@ -1,4 +1,4 @@
-(ns feedme.frontend.config)
+(ns app.config)
 
 (def debug?
   ^boolean goog.DEBUG)

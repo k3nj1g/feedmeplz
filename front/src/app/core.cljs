@@ -1,11 +1,11 @@
-(ns feedme.frontend.core
+(ns app.core
   (:require [re-frame.core :as rf]
             [reagent.dom :as rdom]
             [goog.dom :as gdom]
 
-            [feedme.frontend.config :as config]
-            [feedme.frontend.events :as events]
-            [feedme.frontend.view   :as view]))
+            [app.config :as config]
+            [app.events :as events]
+            [app.view   :as view]))
 
 (defn dev-setup []
   (when config/debug?

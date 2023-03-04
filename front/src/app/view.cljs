@@ -1,4 +1,4 @@
-(ns feedme.frontend.view
+(ns app.view
   (:require ["@heroicons/react/24/outline" :refer [UserCircleIcon]]))
 
 (defn navbar []

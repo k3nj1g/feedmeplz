@@ -1,4 +1,4 @@
-(ns feedme.frontend.db)
+(ns app.db)
 
 (def default-db
   {:name "Feed Me!"})
