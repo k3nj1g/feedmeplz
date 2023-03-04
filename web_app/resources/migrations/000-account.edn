@@ -1,0 +1,9 @@
+{:up [[:table/create {:table :account}
+       [:column/add
+        [:id {:primary-key true} :serial]
+        [:username {:unique true} :string]
+        [:nickname {:unique true} :string]
+        [:password {:default false} :string]
+        [:last-login {:optional true} :timestamp]
+        [:gungnir/timestamps]]]]
+  :down [[:table/drop :account]]}

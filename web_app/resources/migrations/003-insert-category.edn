@@ -1,0 +1,14 @@
+{:up [[:feedme/insert-data
+       {:table   :category
+        :columns [:title]}
+       ["Салаты"]
+       ["Первые блюда"]
+       ["Вторые блюда"]
+       ["Гарниры"]]]
+
+ :down [[:feedme/insert-data-reverse
+         {:table :category}
+         "Салаты"
+         "Первые блюда"
+         "Вторые блюда"
+         "Гарниры"]]}

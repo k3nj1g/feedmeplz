@@ -1,0 +1,6 @@
+{:up [[:table/create {:table :category}
+       [:column/add
+        [:id {:primary-key true} :serial]
+        [:title {:unique true} :string]
+        [:gungnir/timestamps]]]]
+ :down [[:table/drop :category]]}
