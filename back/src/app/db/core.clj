@@ -11,6 +11,8 @@
             
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as sql]
+
+            [honey.sql :as hsql]
             
             [app.db.model]))
 
@@ -27,6 +29,19 @@
 
 (defn run-migrations []
   (gmg/migrate! migrations))
+
+(defmethod gmg/format-action :feedme/insert-data [[_key {:keys [table columns]} & fields]]
+  (-> {:insert-into table
+       :columns     columns
+       :values      fields}
+      (hsql/format {:inline true})
+      (first)))
+
+(defmethod gmg/format-action :feedme/insert-data-reverse [[_key {:keys [table]} & fields]]
+  (-> {:delete-from table
+       :where [:in :title fields]}
+      (hsql/format {:inline true})
+      (first)))
 
 (comment
   (def ds (jdbc/get-datasource {:dbtype   "postgresql"
