@@ -9,15 +9,15 @@
 
 (defn dev-setup []
   (when config/debug?
-    (enable-console-print!)
     (println "dev mode")))
 
 (defn ^:dev/after-load mount-root []
   (rf/clear-subscription-cache!)
-  (rdom/render [view/navbar]
-               (gdom/getElement "app")))
+  (let [root-el (gdom/getElement "app")]
+    (rdom/unmount-component-at-node root-el)
+    (rdom/render [view/navbar] root-el)))
 
-(defn ^:export init []
+(defn init []
   (rf/dispatch-sync [::events/initialize-db])
   (dev-setup)
   (mount-root))

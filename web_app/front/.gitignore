@@ -1,6 +1,6 @@
 node_modules/
 
-resources/public/assets/js/cljs-runtime/
+resources/public/js/compiled
 resources/public/assets/js/main.js
 resources/public/assets/js/manifest.edn
 
