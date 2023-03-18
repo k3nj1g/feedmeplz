@@ -1,2 +1,0 @@
-#kaocha/v1 {:randomize? false
-            :fail-fast? true}
