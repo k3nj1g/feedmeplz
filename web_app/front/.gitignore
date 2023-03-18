@@ -1,24 +1,11 @@
 node_modules/
-public/js
 
-/target
-app/resources/public/assets/js/cljs-runtime/
-app/resources/public/assets/js/main.js
-/checkouts
-/src/gen
+resources/public/assets/js/cljs-runtime/
+resources/public/assets/js/main.js
+resources/public/assets/js/manifest.edn
 
-pom.xml
-pom.xml.asc
-*.iml
-*.jar
-*.log
 .shadow-cljs
-.idea
-.lein-*
-.nrepl-*
-.DS_Store
-
-.hgignore
-.hg/
-
 .calva
+.clj-kondo
+.lsp
+.cpcache

@@ -36,7 +36,7 @@
      [:div.flex.flex-1.items-center.justify-center.sm:items-stretch.sm:justify-start
       [:div.flex.flex-shrink-0.items-center
        [:img.h-10
-        {:src "/images/feedmeplz.png" }]]
+        {:src "assets/images/feedmeplz.png" }]]
       [:div.hidden.sm:ml-6.sm:block
        [:div.flex.space-x-4
         [:a.bg-gray-900.text-white.px-3.py-2.rounded-md.text-sm.font-medium
