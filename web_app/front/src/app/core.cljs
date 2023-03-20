@@ -5,7 +5,8 @@
 
             [app.config :as config]
             [app.events :as events]
-            [app.view   :as view]))
+            [app.view   :as view]
+            [app.routes :as routes]))
 
 (defn dev-setup []
   (when config/debug?
@@ -15,9 +16,10 @@
   (rf/clear-subscription-cache!)
   (let [root-el (gdom/getElement "app")]
     (rdom/unmount-component-at-node root-el)
-    (rdom/render [view/navbar] root-el)))
+    (rdom/render [view/layout-view] root-el)))
 
-(defn init []
+(defn ^:export init []
+  (routes/start!)
   (rf/dispatch-sync [::events/initialize-db])
   (dev-setup)
   (mount-root))

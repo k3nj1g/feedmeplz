@@ -1,5 +1,12 @@
 (ns app.view
-  (:require ["@heroicons/react/24/outline" :refer [UserCircleIcon]]))
+  (:require ["@heroicons/react/24/outline" :refer [UserCircleIcon]]
+            
+            [re-frame.core :refer [subscribe]]
+            
+            [app.subs   :as subs]
+            [app.routes :as routes]
+            
+            [app.home.view]))
 
 (defn navbar []
   [:nav.bg-gray-800
@@ -57,3 +64,9 @@
      [:a.bg-gray-900.text-white.block.px-3.py-2.rounded-md.text-base.font-medium
       {:href         "#"
        :aria-current "page"} "Заказ еды"]]]])
+
+(defn layout-view []
+  (let [active-page @(subscribe [::subs/active-page])]
+    [:<>
+     [navbar]
+     (routes/pages active-page)]))
