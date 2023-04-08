@@ -1,6 +1,7 @@
 (ns app.events
   (:require [re-frame.core :refer [reg-event-fx reg-event-db]]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [day8.re-frame.http-fx]
 
             [app.db :as db]))
 
@@ -19,3 +20,8 @@
  (fn-traced [{:keys [db]} [_ {:keys [page]}]]
    {:db       (assoc db :active-page page)
     :dispatch [page]}))
+
+(reg-event-db
+ :put-response
+ (fn-traced [db [_ resp]]
+   (assoc db :response resp)))
