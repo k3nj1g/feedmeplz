@@ -9,7 +9,7 @@
             [gungnir.query     :as gq]
             [gungnir.migration :as gmg]
             
-            [next.jdbc :as jdbc]
+            [next.jdbc     :as jdbc]
             [next.jdbc.sql :as sql]
 
             [honey.sql :as hsql]
