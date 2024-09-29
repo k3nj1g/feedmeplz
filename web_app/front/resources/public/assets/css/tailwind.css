@@ -591,6 +591,10 @@ video {
   visibility: visible !important;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 .collapse {
   visibility: collapse;
 }

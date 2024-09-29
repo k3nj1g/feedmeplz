@@ -1,11 +1,9 @@
-(ns app.routes
+(ns app.server.routes
   (:require [compojure.core  :refer [defroutes GET]]
             [compojure.route :refer [not-found]]
             
             [ring.middleware.json :refer [wrap-json-response]]
 
-            [org.httpkit.client :as http]
-            
             [app.handler :as handler]))
 
 (defroutes routes
@@ -24,8 +22,5 @@
   (-> routes
       wrap-json-response
       allow-cross-origin))
-
-(comment 
-  @(http/get "http://localhost:8088/menu"))
 
 

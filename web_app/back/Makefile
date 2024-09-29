@@ -10,3 +10,6 @@ up:
 
 down:
 	docker-compose down
+
+repl:
+	clj -M:dev:repl/reloaded
