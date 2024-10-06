@@ -1,0 +1,14 @@
+$bs-secondary: 44, 62, 80;
+
+@import "bootstrap/scss/bootstrap";
+
+$pixel-values: (24);
+
+@each $value in $pixel-values {
+  .h--#{$value} {
+    height: #{$value}px;
+  }
+  .w--#{$value} {
+    width: #{$value}px;
+  }
+}

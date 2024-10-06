@@ -6,7 +6,7 @@
 
 (defn home-panel []
   (let [data @(subscribe [:home])]
-    [:<>
+    [:div.container
      [:h1 "Меню"]
      (into
       [:<>]
@@ -14,7 +14,7 @@
        (fn [[category dishes]]
          [:<> 
           [:h2 category]
-          [:table
+          [:table.table
            [:thead
             [:tr
              [:th "Наименование"]
