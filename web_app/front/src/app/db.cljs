@@ -1,4 +1,5 @@
 (ns app.db)
 
 (def default-db
-  {:name "Feed Me!"})
+  {:config {:api-url "http://localhost:8088"}
+   :name   "Feed Me!"})

@@ -1,13 +1,12 @@
-(ns app.home.model
+(ns app.menu.model
   (:require [re-frame.core :refer [reg-sub]]
             
-            [app.home.controller]))
+            [app.menu.controller]))
 
 (reg-sub 
  :home
  (fn [db]
-   #_(def d db)
-   (->> db :response
+   (->> db :http/response :menu
         (group-by :category/title)
         (map
          (fn [[category dishes]]
