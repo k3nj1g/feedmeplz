@@ -4,7 +4,6 @@
             [integrant.core :as ig]))
 
 (defn create-datasource [db-spec]
-  (prn db-spec)
   (hikari/make-datasource db-spec))
 
 (defmethod ig/init-key :persistent/database [_ config]

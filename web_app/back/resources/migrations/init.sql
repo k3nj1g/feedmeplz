@@ -1,4 +1,4 @@
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     description TEXT,
@@ -7,7 +7,7 @@ CREATE TABLE categories (
 );
 
 --;;
-CREATE TABLE dishes (
+CREATE TABLE IF NOT EXISTS dishes (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -18,7 +18,7 @@ CREATE TABLE dishes (
 );
 
 --;;
-CREATE TABLE daily_menu (
+CREATE TABLE IF NOT EXISTS daily_menu (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
     dish_id INTEGER REFERENCES dishes(id),
@@ -27,7 +27,7 @@ CREATE TABLE daily_menu (
 );
 
 --;;
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE users (
 );
 
 --;;
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     dish_id INTEGER REFERENCES dishes(id),

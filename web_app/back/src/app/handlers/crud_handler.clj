@@ -1,0 +1,39 @@
+(ns app.handlers.crud-handler
+  (:require [ring.util.response :as response]
+            
+            [app.models.crud :as crud]))
+
+(defn create-handler [model]
+  (fn [request]
+    (try
+      (let [data   (:body request)
+            result (crud/create! model data)]
+        (response/created "" result))
+      (catch clojure.lang.ExceptionInfo e
+        (response/bad-request (:errors (ex-data e)))))))
+
+(defn read-handler [model]
+  (fn [request]
+    (let [id     (get-in request [:params :id])
+          result (crud/read model id)]
+      (if result
+        (response/response result)
+        (response/not-found {:error "Not found"})))))
+
+(defn update-handler [model]
+  (fn [request]
+    (let [id (get-in request [:params :id])
+          data (:body request)
+          result (crud/update! model id data)]
+      (response/response result))))
+
+(defn delete-handler [model]
+  (fn [request]
+    (let [id (get-in request [:params :id])
+          result (crud/delete! model id)]
+      (response/response result))))
+
+(defn list-handler [model]
+  (fn [_]
+    (let [result (crud/list-all model)]
+      (response/response result))))

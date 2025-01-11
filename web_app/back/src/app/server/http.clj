@@ -5,9 +5,10 @@
             [app.server.routes :as routes]))
 
 (defmethod ig/init-key :http/server
-  [_ {:keys [port]}]
-  (let [server (http-server/run-server #'routes/app {:port port})]
-    (println "INFO: Starting server on port: " port)
+  [_ {:keys [config datasource]}]
+  (let [app    (routes/create-app datasource)
+        server (http-server/run-server app config)]
+    (println "INFO: Starting server on port: " (:port config))
     server))
 
 (defmethod ig/halt-key! :http/server

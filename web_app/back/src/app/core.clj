@@ -1,8 +1,8 @@
 (ns app.core
   (:require [integrant.core :as ig]
-            
+
             [app.config :as config]
-            
+
             [app.server.core])
   (:gen-class))
 
