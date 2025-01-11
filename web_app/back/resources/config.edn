@@ -1,20 +1,20 @@
 {:http/server           {:port  #long #or [#env HTTP_SERVER_PORT 8088]
                          :join? false}
- :persistent/database   {:server-name        #or [#env POSTGRES_HOST "localhost"]
-                         :port-number        #or [#env POSTGRES_PORT 5432]
+ :persistent/database   {:adapter            "postgresql"
                          :database-name      #or [#env POSTGRES_DB "postgres"]
+                         :server-name        #or [#env POSTGRES_HOST "localhost"]
+                         :port-number        #long #or [#env POSTGRES_PORT 5432]
                          :username           #or [#env POSTGRES_USER "postgres"]
                          :password           #or [#env POSTGRES_PASSWORD "postgres"]
-                         :auto-commit        true
-                         :read-only          false
+                         :maximum-pool-size  10
                          :connection-timeout 30000
-                         :validation-timeout 5000
                          :idle-timeout       600000
                          :max-lifetime       1800000
-                         :minimum-idle       10
-                         :maximum-pool-size  10
-                         :pool-name          "db-pool"
-                         :adapter            "postgresql"
-                         :register-mbeans    false}
- :persistent/migrations {:datasource #ig/ref :persistent/database}}
+                         :minimum-idle       10}
+ :persistent/migrations {:store                :database
+                         :migration-dir        "migrations"
+                         :init-script          "init.sql"
+                         :init-in-transaction? true
+                         :migration-table-name "schema_migrations"
+                         :db                   {:datasource #ig/ref :persistent/database}}}
 

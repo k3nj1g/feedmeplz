@@ -1,5 +1,5 @@
 (ns app.server.routes
-  (:require [compojure.core  :refer [defroutes GET]]
+  (:require [compojure.core  :refer [defroutes GET POST]]
             [compojure.route :refer [not-found]]
             
             [ring.middleware.json :refer [wrap-json-response]]
@@ -9,7 +9,10 @@
 (defroutes routes
   (GET "/health" [] "ok")
   (GET "/menu" [] handler/get-menu)
-  (not-found "Page not found"))
+  (GET "/categories" [] handler/get-categories)
+  (POST "/dishes" [] handler/add-dish)
+  (POST "/categories" [] handler/add-category)
+  (not-found "Not Found"))
 
 (defn allow-cross-origin
   "middleware function to allow crosss origin"
@@ -22,5 +25,4 @@
   (-> routes
       wrap-json-response
       allow-cross-origin))
-
 

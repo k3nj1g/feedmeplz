@@ -1,9 +1,7 @@
-POSTGRES_USER=chef
-POSTGRES_PASSWORD=vS2!toGg
-POSTGRES_PORT=5433
-POSTGRES_DB=feedme
-
-.EXPORT_ALL_VARIABLES:
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
 
 up:
 	docker-compose up -d

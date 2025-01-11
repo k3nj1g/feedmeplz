@@ -1,8 +1,8 @@
 (ns app.server.migrations
-  (:require [integrant.core    :as ig]
-            [gungnir.migration :as gmg]))
+  (:require [integrant.core :as ig]
+            [migratus.core :as migratus]))
 
 (defmethod ig/init-key :persistent/migrations
-  [& _]
-  (let [migrations (gmg/load-resources "migrations")]
-    (gmg/migrate! migrations)))
+  [_ config]
+  (migratus/init config)
+  (migratus/migrate config))
