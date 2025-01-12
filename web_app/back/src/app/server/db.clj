@@ -1,7 +1,8 @@
 (ns app.server.db
-  (:require [next.jdbc :as jdbc]
-            [hikari-cp.core :as hikari]
-            [integrant.core :as ig]))
+  (:require [integrant.core :as ig]
+            [honey.sql      :as sql]
+            [next.jdbc      :as jdbc]
+            [hikari-cp.core :as hikari]))
 
 (defn create-datasource [db-spec]
   (hikari/make-datasource db-spec))
@@ -15,6 +16,6 @@
 (defn get-connection [datasource]
   (jdbc/get-connection datasource))
 
-(defn execute-query [datasource sql-params]
+(defn execute-query [datasource query]
   (with-open [conn (get-connection datasource)]
-    (jdbc/execute! conn sql-params)))
+    (jdbc/execute! conn (sql/format query))))

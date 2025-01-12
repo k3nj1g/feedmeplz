@@ -1,4 +1,4 @@
-(ns app.models.abstract-model)(ns app.models.abstract-model
+(ns app.models.abstract-model
   (:require [honey.sql :as sql]
             
             [malli.core  :as m]
@@ -18,7 +18,7 @@
 (defrecord AbstractModel [table-name schema datasource]
   CRUD
   (create! [_ data]
-    (if-let [errors (validate-data schema data)]
+    (if-let [errors (validate-data schema (or data {}))]
       (throw (ex-info "Validation failed" {:errors errors}))
       (let [query (sql/format {:insert-into table-name
                                :values      [data]})]
