@@ -6,8 +6,8 @@
  :nrepl    {:port 33333}
 
  :builds   {:app {:target     :browser
-                  :output-dir "resources/public/js/compiled"
-                  :asset-path "/js/compiled"
+                  :output-dir "resources/public/js"
+                  :asset-path "/js"
                   :modules    {:app {:init-fn app.core/init}}
                   :devtools   {:preloads [day8.re-frame-10x.preload]}
                   :dev        {:compiler-options {:closure-defines {re-frame.trace.trace-enabled?        true

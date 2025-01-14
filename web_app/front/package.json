@@ -7,22 +7,22 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "highlight.js": "11.5.1",
+    "lucide-react": "^0.471.1",
     "react": "^17.0.2",
     "react-dom": "17.0.2"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
-    "shadow-cljs": "2.20.20",
-
     "autoprefixer": "^10.4.20",
     "nodemon": "^3.1.4",
-    "postcss": "^8.4.44",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.1",
     "postcss-cli": "^11.0.0",
     "sass": "^1.77.8",
+    "shadow-cljs": "2.20.20",
     "sirv-cli": "^2.0.2",
     "stylelint": "^16.9.0",
     "stylelint-config-twbs-bootstrap": "^15.0.0",
-    
+    "tailwindcss": "^3.4.17",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
@@ -30,9 +30,9 @@
   "scripts": {
     "shadow:watch": "shadow-cljs watch app",
     "css-compile": "sass --style compressed --source-map --embed-sources --no-error-css --load-path=node_modules --quiet-deps resources/public/assets/scss/:resources/public/assets/css/",
-    "css-prefix": "postcss --replace  resources/public/assets/css/styles.css --use autoprefixer --map",
+    "css-prefix": "postcss --replace resources/public/assets/css/styles.css --use autoprefixer --map",
     "css": "npm-run-all css-compile css-prefix",
-    "bootstrap:watch": "nodemon -e html,scss -x \"npm run css\"",
-    "dev": "run-p -l *:watch"
+    "tailwind:watch": "tailwindcss -i ./resources/public/css/styles.css -o ./resources/public/css/main.css --watch",
+    "dev": "run-p -l shadow:watch tailwind:watch"
   }
 }
