@@ -22,6 +22,18 @@
     :dispatch [page]}))
 
 (reg-event-db
+ :toggle-popup-menu
+ (fn [db [_ popup-id]]
+   (update db :popup-menu (fnil (fn [popup-menu] (if (contains? popup-menu popup-id)
+                                                   (disj popup-menu popup-id)
+                                                   (conj popup-menu popup-id))) #{}))))
+
+(reg-event-db
+ :close-popup-menu
+ (fn [db [_ popup-id]]
+   (update db :popup-menu (fnil (fn [popup-menu] (disj popup-menu popup-id)) #{}))))
+
+(reg-event-db
  :put-response
  (fn [db [_ params resp]]
    (when-let [pid (:pid params)]

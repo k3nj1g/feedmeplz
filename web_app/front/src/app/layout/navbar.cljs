@@ -1,41 +1,41 @@
 (ns app.layout.navbar
-  (:require ["lucide-react" :refer [Calendar Clock User Users Settings ShoppingCart ChevronDown]]
+  (:require ["lucide-react" :refer [Clock User Settings ShoppingCart ChevronDown]]
+            
             [re-frame.core :as rf]
-            [reagent.core :as r]
-            [app.routes :as routes]))
+            
+            [app.components.dropdown :refer [dropdown]]))
 
 (defn admin-menu-item
-  [label section-name]
+  [label page-name]
   [:button.block.px-4.py-2.text-sm.text-gray-700.hover:bg-gray-100.w-full.text-left
    {:on-click #(do
-                 (rf/dispatch [:set-active-section section-name])
-                 (rf/dispatch [:toggle-admin-menu false]))}
+                 #_(rf/dispatch [:set-active-section section-name])
+                 (rf/dispatch [:navigate page-name]))}
    label])
 
-(defn admin-menu []
-  (let [show-menu (r/atom false)]
-    (fn []
-      [:div.relative.inline-flex
-        [:button.inline-flex.items-center
-         {:class (if false #_(clojure.string/starts-with? (name @active-section) "admin")
-                     [:border-blue-500 :text-gray-900]
-                     [:border-transparent :text-gray-500])
-          :on-click #(swap! show-menu not)}
-         [:> Settings {:class [:w-5 :h-5 :mr-2]}]
-         "Управление"
-         [:> ChevronDown {:class [:w-4 :h-4 :ml-1]}]]
-      
-        (when @show-menu
-          [:div.absolute.top-full.z-10.left-0.mt-2.w-56.rounded-md.shadow-lg.bg-white.ring-1.ring-black.ring-opacity-5
-           [:div.py-1
-            [admin-menu-item "Каталог блюд" :admin-catalog]
-            [admin-menu-item "Меню дня" :admin-daily]
-            [admin-menu-item "Пользователи" :admin-users]
-            [admin-menu-item "Роли" :admin-roles]]])])))
+(defn admin-menu
+  []
+  [dropdown
+   {:popup-id  :admin
+    :trigger   {:tag     :button
+                :props   {:class (cond-> [:inline-flex :items-center]
+                                   true
+                                   (conj :border-transparent :text-gray-500))}
+                :content [:<>
+                          [:> Settings {:class [:w-5 :h-5 :mr-2]}]
+                          "Управление"
+                          [:> ChevronDown {:class [:w-4 :h-4 :ml-1]}]]}
+    :content   [:div.py-1
+                [admin-menu-item "Каталог блюд" :admin-catalog]
+                [admin-menu-item "Меню дня" :admin-daily]
+                [admin-menu-item "Пользователи" :admin-users]
+                [admin-menu-item "Роли" :admin-roles]]
+    :placement :top}])
 
-(defn nav-button [current-page page-name icon label]
+(defn nav-button
+  [current-page page-name icon label]
   [:button
-   {:class    (into [:inline-flex :items-center :px-1 :pt-1 :border-b-2]
+   {:class    (into [:inline-flex :items-center :px-1 :border-b-2]
                     (if (= current-page page-name)
                       [:border-blue-500 :text-gray-900]
                       [:border-transparent :text-gray-500]))

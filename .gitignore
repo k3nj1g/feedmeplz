@@ -176,5 +176,5 @@ poetry.toml
 .ruff_cache/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
-web_app/front/resources/public/assets/js/manifest.edn
+web_app/front/resources/public/js
 web_app/back/.calva/repl.calva-repl

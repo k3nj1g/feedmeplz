@@ -3,7 +3,7 @@
   (:require [bidi.bidi     :as bidi]
             [pushy.core    :as pushy]
             [re-frame.core :as rf]
-            
+
             [app.events :as events]))
 
 (defmulti pages identity)
@@ -12,9 +12,9 @@
 ;; Route definitions
 (def routes
   "Application routes"
-  ["/" {"" :home
-        "menu" :menu
-        "about" :about}])
+  ["/" {""              :home
+        "menu"          :menu
+        "admin-catalog" :admin-catalog}])
 
 ;; URL parsing and generation
 (defn parse-url
