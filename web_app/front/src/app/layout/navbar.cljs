@@ -18,13 +18,13 @@
   [dropdown
    {:popup-id  :admin
     :trigger   {:tag     :button
-                :props   {:class (cond-> [:inline-flex :items-center]
+                :props   {:class (cond-> ["inline-flex" "items-center"]
                                    true
-                                   (conj :border-transparent :text-gray-500))}
+                                   (conj "border-transparent" "text-gray-500"))}
                 :content [:<>
-                          [:> Settings {:class [:w-5 :h-5 :mr-2]}]
+                          [:> Settings {:class ["w-5" "h-5" "mr-2"]}]
                           "Управление"
-                          [:> ChevronDown {:class [:w-4 :h-4 :ml-1]}]]}
+                          [:> ChevronDown {:class ["w-4" "h-4" "ml-1"]}]]}
     :content   [:div.py-1
                 [admin-menu-item "Каталог блюд" :admin-catalog]
                 [admin-menu-item "Меню дня" :admin-daily]
@@ -35,12 +35,12 @@
 (defn nav-button
   [current-page page-name icon label]
   [:button
-   {:class    (into [:inline-flex :items-center :px-1 :border-b-2]
+   {:class    (into ["inline-flex" "items-center" "px-1" "border-b-2"]
                     (if (= current-page page-name)
-                      [:border-blue-500 :text-gray-900]
-                      [:border-transparent :text-gray-500]))
+                      ["border-blue-500" "text-gray-900"]
+                      ["border-transparent" "text-gray-500"]))
     :on-click #(rf/dispatch [:navigate page-name])}
-   [:> icon {:class [:w-5 :h-5 :mr-2]}]
+   [:> icon {:class ["w-5" "h-5" "mr-2"]}]
    label])
 
 (defn navigation
@@ -53,5 +53,5 @@
       [nav-button current-page :orders ShoppingCart "Мои заказы"]
       [admin-menu]]
      [:div.flex.items-center
-      [:> User {:class [:w-5 :h-5 :text-gray-500]}]
+      [:> User {:class ["w-5" "h-5" "text-gray-500"]}]
       [:span.ml-2.text-gray-700 "Иван Петров"]]]]])

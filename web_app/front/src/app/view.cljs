@@ -17,4 +17,4 @@
     [:<>
      [navigation active-page]
      [:div.max-w-6xl.mx-auto.px-4.py-6
-      (routes/pages active-page)]]))
+      [(routes/pages active-page)]]]))

@@ -3,6 +3,8 @@
             [reagent.dom :as rdom]
             [goog.dom :as gdom]
 
+            [zenform.core]
+
             [app.config :as config]
             [app.events :as events]
             [app.view   :as view]

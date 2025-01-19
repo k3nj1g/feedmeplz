@@ -1,4 +1,5 @@
-(ns app.components.base)
+(ns app.components.base
+  (:require [reagent-mui.material.button :refer [button] :rename {button mui-button}]))
 
 (defn heading
   [title]
@@ -6,7 +7,9 @@
 
 (defn button
   [props & children]
-  [:button
-   (-> props
-       (update :class conj :flex :items-center :px-4 :py-2 :bg-blue-500 :text-white :rounded-md :hover:bg-blue-600))
-   children])
+  (into
+   [mui-button
+    (merge props (case (:type props)
+                   "primary" (merge {:variant "contained"})
+                   {:variant "outlined"}))]
+   children))

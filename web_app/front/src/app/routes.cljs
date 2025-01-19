@@ -7,7 +7,7 @@
             [app.events :as events]))
 
 (defmulti pages identity)
-(defmethod pages :default [] [:div "Страница не существует по заданному пути."])
+(defmethod pages :default [] (fn [] [:div "Страница не существует по заданному пути."]))
 
 ;; Route definitions
 (def routes
