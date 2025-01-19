@@ -4,8 +4,9 @@
 
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
 
-            [app.handler               :as handler]
-            [app.handlers.crud-handler :as crud]
+            [app.handler                   :as handler]
+            [app.handlers.crud-handler     :as crud]
+            [app.handlers.category-handler :as category-handler]
 
             [app.models.category   :as category]
             [app.models.daily-menu :as daily-menu]
@@ -27,6 +28,7 @@
      ;; Маршруты для категорий
      (GET "/categories" [] (crud/list-handler category-model))
      (GET "/categories/:id" [] (crud/read-handler category-model))
+     (GET "/categories/:category_id/dishes" [] (category-handler/dishes-by-category datasource))
      (POST "/categories" [] (crud/create-handler category-model))
      (PUT "/categories/:id" [] (crud/update-handler category-model))
      (DELETE "/categories/:id" [] (crud/delete-handler category-model))

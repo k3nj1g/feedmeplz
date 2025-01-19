@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS dishes (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     category_id INTEGER REFERENCES categories(id),
+    kcals DECIMAL(10, 2),
+    weight DECIMAL(10, 2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

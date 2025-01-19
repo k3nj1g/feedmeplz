@@ -1,3 +1,5 @@
+.PHONY: dev
+
 ifneq (,$(wildcard .env))
     include .env
     export
@@ -9,5 +11,5 @@ up:
 down:
 	docker-compose down
 
-repl:
+dev:
 	clj -M:dev:repl/reloaded
