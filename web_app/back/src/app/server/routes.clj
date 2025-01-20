@@ -2,6 +2,7 @@
   (:require [compojure.core  :refer [routes DELETE GET POST PUT]]
             [compojure.route :refer [not-found]]
 
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
 
             [app.handler                   :as handler]
@@ -63,16 +64,10 @@
 
      (not-found "Not Found"))))
 
-(defn allow-cross-origin
-  "middleware function to allow cross origin"
-  [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (assoc-in response [:headers "Access-Control-Allow-Origin"] "*"))))
-
 (defn create-app
   [datasource]
   (-> (create-routes datasource)
       wrap-json-response
       (wrap-json-body {:keywords? true})
-      allow-cross-origin))
+      (wrap-cors :access-control-allow-origin [#"http://localhost:8280"]
+                 :access-control-allow-methods [:get :post :put :delete])))
