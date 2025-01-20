@@ -1,6 +1,8 @@
-(ns app.admin.catalog.controller 
+(ns app.admin.catalog.controller
   (:require
-   [re-frame.core :refer [reg-event-fx]]))
+   [re-frame.core :refer [reg-event-fx]]
+
+   [app.admin.catalog.form :as form]))
 
 (reg-event-fx
  :admin-catalog
@@ -21,3 +23,25 @@
    {:http/request {:method :get
                    :uri    (str "/categories/" category_id "/dishes")
                    :pid    ::dishes-by-category}}))
+
+(reg-event-fx
+ ::save-dish-flow
+ (fn [_ [_ active-category]]
+   {:dispatch [:zf/eval-form form/form-path
+               {:data {:category-id (:id active-category)}
+                :success {:event ::save-dish}}]}))
+
+(reg-event-fx
+ ::save-dish
+ (fn [_ [_ {:keys [data]}]]
+   {:http/request {:method  :post
+                   :uri     "/dishes"
+                   :body    (assoc (:form-value data) :category_id (:category-id data))
+                   :pid     ::save-dish
+                   :success {:event ::dish-saved}}}))
+
+(reg-event-fx
+ ::dish-saved
+ (fn [& _]
+   {:toast {:message "Блюдо успешно добавлено"
+            :type    :success}}))

@@ -1,7 +1,10 @@
-(ns app.helpers)
+(ns app.helpers
+  (:require
+   [re-frame.core :as rf]))
 
-(defmacro persist-scope
-  "Takes local scope vars and defines them in the global scope. Useful for RDD"
-  []
-  `(do ~@(map (fn [v] `(def ~v ~v))
-              (keys (cond-> &env (contains? &env :locals) :locals)))))
+(def action
+  (memoize
+   (fn make-handler [event]
+     (fn dispatch
+       ([]  (rf/dispatch event))
+       ([_] (rf/dispatch event))))))

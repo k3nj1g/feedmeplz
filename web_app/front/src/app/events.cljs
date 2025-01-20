@@ -3,8 +3,6 @@
             [re-frame.core :refer [dispatch reg-event-fx reg-event-db reg-fx]]
             [day8.re-frame.http-fx]
 
-            [zenform.model :as zf]
-
             [app.db :as db]))
 
 (reg-event-db
@@ -58,12 +56,17 @@
 (reg-event-fx
  :http/request
  (fn [{:keys [db]} [_ params]]
-   {:http-xhrio (-> params
-                    (update :uri (partial str (get-in db [:config :api-url])))
-                    (merge {:timeout         8000
-                            :response-format (ajax/json-response-format {:keywords? true})
-                            :on-success      [:success-http-result params]
-                            :on-failure      [:bad-http-result]}))}))
+   {:http-xhrio (cond-> (-> params
+                            (update :uri (partial str (get-in db [:config :api-url])))
+                            (merge {:timeout         8000
+                                    :response-format (ajax/json-response-format {:keywords? true})
+                                    :on-success      [:success-http-result params]
+                                    :on-failure      [:bad-http-result]}))
+                  (:body params)
+                  (-> (dissoc :body)
+                      (assoc :params          (:body params)
+                             :format          (ajax/json-request-format)
+                             :response-format (ajax/json-response-format {:keywords? true}))))}))
 
 (reg-event-fx
  :success-http-result
@@ -73,6 +76,12 @@
           (conj (->> [:dispatch (->> [(:event success) (:params params) resp]
                                      (remove nil?)
                                      (vec))])))}))
+
+(reg-event-fx
+ :bad-http-result
+ (fn [_ [_ resp]]
+   {:toast {:message (str "Произошла ошибка: " (:status resp))
+            :type    :error}}))
 
 (reg-fx
  :http/request
@@ -87,22 +96,3 @@
           (assoc-in db path value)
           (assoc db path value))}))
 
-(reg-event-fx
- :eval-form
- (fn [{db :db} [_ form-path {:keys [data success error]}]]
-   (let [form-data                   (get-in db form-path)
-         {:keys [errors value form]} (zf/eval-form form-data)]
-     (cond-> {:db (assoc-in db form-path (assoc form :errors errors))
-              :fx []}
-
-       (and (empty? errors) success)
-       (assoc :dispatch [(:event success) (assoc (:params success) :data
-                                                 (merge data {:form-data  form
-                                                              :form-value value}))])
-
-       (seq errors)
-       ((completing
-         (.warn js/console "Form errors: " (clj->js errors))))
-
-       (and (seq errors) error)
-       (update :fx conj [:dispatch [(:event error) (assoc (:params error) :errors errors)]])))))

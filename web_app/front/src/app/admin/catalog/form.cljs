@@ -15,7 +15,7 @@
                           :validators {:required {:message "Укажите цену"}}}
             :category_id {:type  :number
                           :label "Категория"}
-            :calories    {:type      :number
+            :kcals       {:type      :number
                           :label     "Калории"
                           :adornment "ккал"}
             :weight      {:type      :number

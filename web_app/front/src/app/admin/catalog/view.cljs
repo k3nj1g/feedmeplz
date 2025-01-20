@@ -92,7 +92,8 @@
 (defn edit-dish-dialog
   [{:keys [dish]}]
   (let [is-open  @(subscribe [:active-dialog :add-dish])
-        on-close #(dispatch [:close-dialog-menu :add-dish])]
+        on-close #(dispatch [:close-dialog-menu :add-dish])
+        {:keys [on-save]} @(subscribe [::model/edit-dish-dialog-data])]
     [dialog
      {:open       is-open
       :full-width true
@@ -108,13 +109,13 @@
        [:div.grid.grid-cols-3.gap-4
         [text-input form/form-path [:price]]
         [text-input form/form-path [:weight]]
-        [text-input form/form-path [:calories]]]]]
+        [text-input form/form-path [:kcals]]]]]
 
       [:div
        {:class ["px-4" "pb-4"]}
        [dialog-actions
         [button {:type "default" :on-click on-close} "Отмена"]
-        [button {:type "primary" :on-click #(dispatch [:eval-form form/form-path])} "Сохранить"]]]]))
+        [button {:type "primary" :on-click on-save} "Сохранить"]]]]))
 
 (defn header
   []
@@ -172,7 +173,6 @@
       [vertical-tab active-category]
       [category-content active-category]]
 
-     [edit-dish-dialog
-      {}]]))
+     [edit-dish-dialog]]))
 
 (defmethod app.routes/pages :admin-catalog [] dish-catalog)
