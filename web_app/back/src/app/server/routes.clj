@@ -1,5 +1,7 @@
 (ns app.server.routes
-  (:require [compojure.core  :refer [routes DELETE GET POST PUT]]
+  (:require [clojure.tools.logging :as log]
+            
+            [compojure.core  :refer [routes DELETE GET POST PUT]]
             [compojure.route :refer [not-found]]
 
             [ring.middleware.cors :refer [wrap-cors]]
@@ -64,9 +66,20 @@
 
      (not-found "Not Found"))))
 
+(defn wrap-exception-handling [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Exception e
+        (log/error e "An error occurred while processing the request")
+        {:status 500
+         :body   {:error   "Internal Server Error"
+                  :message (.getMessage e)}}))))
+
 (defn create-app
   [datasource]
   (-> (create-routes datasource)
+      wrap-exception-handling
       wrap-json-response
       (wrap-json-body {:keywords? true})
       (wrap-cors :access-control-allow-origin [#"http://localhost:8280"]

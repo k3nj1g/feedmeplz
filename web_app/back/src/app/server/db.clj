@@ -1,8 +1,10 @@
 (ns app.server.db
   (:require [integrant.core :as ig]
             [honey.sql      :as sql]
-            [next.jdbc      :as jdbc]
-            [hikari-cp.core :as hikari]))
+            [hikari-cp.core :as hikari]
+
+            [next.jdbc            :as jdbc]
+            [next.jdbc.result-set :as rs]))
 
 (defn create-datasource [db-spec]
   (hikari/make-datasource db-spec))
@@ -18,4 +20,4 @@
 
 (defn execute-query [datasource query]
   (with-open [conn (get-connection datasource)]
-    (jdbc/execute! conn (sql/format query))))
+    (jdbc/execute! conn (sql/format query) {:builder-fn rs/as-unqualified-lower-maps})))
