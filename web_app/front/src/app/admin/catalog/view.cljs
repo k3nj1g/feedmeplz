@@ -24,37 +24,11 @@
             [app.admin.catalog.form  :as form]
             [app.admin.catalog.model :as model]))
 
-(def initial-dishes
-  {"Салаты" [{:id 1
-              :name "Цезарь с курицей"
-              :description "Салат романо, куриное филе, гренки, пармезан, соус цезарь"
-              :price 420
-              :weight 220
-              :calories 350}
-             {:id 2
-              :name "Греческий"
-              :description "Свежие овощи, маслины, сыр фета, оливковое масло"
-              :price 380
-              :weight 200
-              :calories 280}]
-   "Супы" [{:id 3
-            :name "Борщ"
-            :description "Традиционный борщ со сметаной"
-            :price 320
-            :weight 300
-            :calories 240}
-           {:id 4
-            :name "Куриный суп"
-            :description "Куриный бульон с лапшой и овощами"
-            :price 280
-            :weight 300
-            :calories 180}]})
-
 (defn add-dish-button
   []
   [button
    {:type     "primary"
-    :on-click #(do (dispatch [:toggle-dialog-menu :add-dish])
+    :on-click #(do (dispatch [:open-dialog :edit-dish])
                    (dispatch [:zf/init form/form-path form/form-schema]))}
    [:> Plus {:class "w-4 h-4 mr-2"}]
    "Добавить блюдо"])
@@ -69,7 +43,7 @@
    [add-dish-button]])
 
 (defn dish-card
-  [dish]
+  [{:keys [on-edit on-delete] :as dish}]
   [card
    [card-content
     [:div.flex.justify-between.items-start
@@ -80,22 +54,23 @@
         [:p.text-sm.text-gray-600 (:description dish)]]
        [:div.flex.space-x-2
         [:button.p-2.text-gray-500.hover:text-blue-500
-         #_{:on-click #(on-edit dish)}
+         {:on-click on-edit}
          [:> Edit {:class [:w-4 :h-4]}]]
         [:button.p-2.text-gray-500.hover:text-red-500
+         {:on-click on-delete}
          [:> Trash2 {:class [:w-4 :h-4]}]]]]
       [:div.flex.space-x-4.mt-2.text-sm.text-gray-500
        [:span (str (:price dish) " ₽")]
        [:span (str (:weight dish) " г")]
-       [:span (str (:calories dish) " ккал")]]]]]])
+       [:span (str (:kcals dish) " ккал")]]]]]])
 
 (defn edit-dish-dialog
-  [{:keys [dish]}]
-  (let [is-open  @(subscribe [:active-dialog :add-dish])
-        on-close #(dispatch [:close-dialog-menu :add-dish])
-        {:keys [on-save]} @(subscribe [::model/edit-dish-dialog-data])]
+  []
+  (let [{:keys [open]}         @(subscribe [:dialog-state :edit-dish])
+        on-close               #(dispatch [:close-dialog :edit-dish])
+        {:keys [dish on-save]} @(subscribe [::model/edit-dish-dialog-data])]
     [dialog
-     {:open       is-open
+     {:open       open
       :full-width true
       :max-width  "sm"}
      [dialog-title
@@ -116,6 +91,23 @@
        [dialog-actions
         [button {:type "default" :on-click on-close} "Отмена"]
         [button {:type "primary" :on-click on-save} "Сохранить"]]]]))
+
+(defn delete-dish-dialog
+  []
+  (let [{:keys [open]} @(subscribe [:dialog-state :delete-dish])
+        on-close #(dispatch [:close-dialog :delete-dish])
+        {:keys [dish on-delete]} @(subscribe [::model/delete-dish-dialog-data])]
+    [dialog
+     {:open open
+      :on-close on-close}
+     [dialog-title "Удалить блюдо"]
+     [dialog-content
+      [:p (str "Вы уверены, что хотите удалить блюдо \"" (:name dish) "\"?")]]
+     [:div
+      {:class ["px-4" "pb-4"]}
+      [dialog-actions
+       [button {:type "default" :on-click on-close} "Отмена"]
+       [button {:type "primary" :color "error" :on-click on-delete} "Удалить"]]]]))
 
 (defn header
   []
@@ -139,20 +131,7 @@
 
 (defn category-content
   [active-category]
-  (let [dishes (if (= 1 (:id active-category))
-                 [{:id 1
-                   :name "Цезарь с курицей"
-                   :description "Салат романо, куриное филе, гренки, пармезан, соус цезарь"
-                   :price 420
-                   :weight 220
-                   :calories 350}
-                  {:id 2
-                   :name "Греческий"
-                   :description "Свежие овощи, маслины, сыр фета, оливковое масло"
-                   :price 380
-                   :weight 200
-                   :calories 280}]
-                 @(subscribe [::model/dishes-by-category active-category]))]
+  (let [dishes @(subscribe [::model/dishes-by-category active-category])]
     [:div.flex-1.space-y-4
      (if (empty? dishes)
        [empty-state]
@@ -173,6 +152,7 @@
       [vertical-tab active-category]
       [category-content active-category]]
 
-     [edit-dish-dialog]]))
+     [edit-dish-dialog]
+     [delete-dish-dialog]]))
 
 (defmethod app.routes/pages :admin-catalog [] dish-catalog)

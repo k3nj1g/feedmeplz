@@ -15,7 +15,9 @@
 (reg-event-fx
  ::set-active-category
  (fn [{db :db} [_ categories]]
-   {:db (assoc-in db [:page :active-category] (first categories))}))
+   (let [category (first categories)]
+     {:db       (assoc-in db [:page :active-category] category)
+      :dispatch [::get-dishes-by-category (:id category)]})))
 
 (reg-event-fx
  ::get-dishes-by-category
@@ -26,22 +28,55 @@
 
 (reg-event-fx
  ::save-dish-flow
- (fn [_ [_ active-category]]
+ (fn [_ [_ active-category dish]]
    {:dispatch [:zf/eval-form form/form-path
-               {:data {:category-id (:id active-category)}
-                :success {:event ::save-dish}}]}))
+               {:data    {:category-id (:id active-category)
+                          :dish        dish}
+                :success {:event (if dish ::update-dish ::create-dish)}}]}))
 
 (reg-event-fx
- ::save-dish
+ ::create-dish
  (fn [_ [_ {:keys [data]}]]
    {:http/request {:method  :post
                    :uri     "/dishes"
                    :body    (assoc (:form-value data) :category_id (:category-id data))
-                   :pid     ::save-dish
-                   :success {:event ::dish-saved}}}))
+                   :success {:event  ::save-success
+                             :params data}}}))
 
 (reg-event-fx
- ::dish-saved
- (fn [& _]
-   {:toast {:message "Блюдо успешно добавлено"
-            :type    :success}}))
+ ::update-dish
+ (fn [_ [_ {:keys [data]}]]
+   {:http/request {:method  :put
+                   :uri     (str "/dishes/" (:id (:dish data)))
+                   :body    (:form-value data)
+                   :success {:event  ::save-success
+                             :params data}}}))
+
+(reg-event-fx
+ ::save-success
+ (fn [_ [_ {:keys [category-id dish]}]]
+   {:toast {:message (if dish "Блюдо успешно обновлено" "Блюдо успешно сохранено")
+            :type    :success}
+    :fx    [[:dispatch [:close-dialog :edit-dish]]
+            [:dispatch [::get-dishes-by-category category-id]]]}))
+
+(reg-event-fx
+ ::init-edit-dish
+ (fn [_ [_ dish]]
+   {:fx [[:dispatch [:open-dialog :edit-dish dish]]
+         [:dispatch [:zf/init form/form-path form/form-schema dish]]]}))
+
+(reg-event-fx
+ ::delete-dish
+ (fn [_ [_ dish]]
+   {:http/request {:method  :delete
+                   :uri     (str "/dishes/" (:id dish))
+                   :success {:event ::delete-success}}}))
+
+(reg-event-fx
+ ::delete-success
+ (fn [_ [_ dish]]
+   {:toast {:message "Блюдо успешно удалено"
+            :type    :warning}
+    :fx    [[:dispatch [:close-dialog :delete-dish]]
+            [:dispatch [::get-dishes-by-category (:category_id dish)]]]}))

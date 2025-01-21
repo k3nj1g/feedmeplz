@@ -9,3 +9,5 @@ resources/public/assets/js/manifest.edn
 .clj-kondo
 .lsp
 .cpcache
+
+.portal/

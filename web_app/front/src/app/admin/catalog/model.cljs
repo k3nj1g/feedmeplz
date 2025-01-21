@@ -2,7 +2,7 @@
   (:require [re-frame.core :refer [reg-sub]]
             
             [app.helpers :as h]
-                        
+            
             [app.admin.catalog.controller :as ctrl]))
 
 (reg-sub
@@ -18,10 +18,22 @@
 (reg-sub
  ::dishes-by-category
  (fn [db _]
-   (->> db :http/response ::ctrl/dishes-by-category)))
+   (->> db :http/response ::ctrl/dishes-by-category
+        (map #(assoc %
+                     :on-edit (h/action [::ctrl/init-edit-dish %])
+                     :on-delete (h/action [:open-dialog :delete-dish %]))))))
 
 (reg-sub
  ::edit-dish-dialog-data
- :<- [::data]
- (fn [{:keys [active-category]} _]
-   {:on-save (h/action [::ctrl/save-dish-flow active-category])}))
+ (fn [db _]
+   (let [active-category (-> db :page :active-category)
+         dish            (get-in db [:dialogs :edit-dish :data])]
+     {:dish    dish
+      :on-save (h/action [::ctrl/save-dish-flow active-category dish])})))
+
+(reg-sub
+ ::delete-dish-dialog-data
+ (fn [db _]
+   (let [dish (get-in db [:dialogs :delete-dish :data])]
+     {:dish      dish
+      :on-delete (h/action [::ctrl/delete-dish dish])})))

@@ -35,16 +35,19 @@
    (update db :popup-menu (fnil (fn [popup-menu] (disj popup-menu popup-id)) #{}))))
 
 (reg-event-db
- :toggle-dialog-menu
- (fn [db [_ dialog-id]]
-   (update db :dialog-menu (fnil (fn [dialog-menu] (if (contains? dialog-menu dialog-id)
-                                                     (disj dialog-menu dialog-id)
-                                                     (conj dialog-menu dialog-id))) #{}))))
+ :open-dialog
+ (fn [db [_ dialog-id data]]
+   (assoc-in db [:dialogs dialog-id] {:open true :data data})))
 
 (reg-event-db
- :close-dialog-menu
+ :close-dialog
  (fn [db [_ dialog-id]]
-   (update db :dialog-menu (fnil (fn [dialog-menu] (disj dialog-menu dialog-id)) #{}))))
+   (update-in db [:dialogs dialog-id] assoc :open false dissoc :data)))
+
+(reg-event-db
+ :update-dialog-data
+ (fn [db [_ dialog-id data]]
+   (update-in db [:dialogs dialog-id :data] merge data)))
 
 
 (reg-event-db
@@ -62,18 +65,20 @@
                                     :response-format (ajax/json-response-format {:keywords? true})
                                     :on-success      [:success-http-result params]
                                     :on-failure      [:bad-http-result]}))
-                  (:body params)
+                  (#{:post :put :patch} (:method params))
                   (-> (dissoc :body)
-                      (assoc :params          (:body params)
-                             :format          (ajax/json-request-format)
-                             :response-format (ajax/json-response-format {:keywords? true}))))}))
+                      (assoc :params (:body params)
+                             :format (ajax/json-request-format)))
+
+                  (= :delete (:method params))
+                  (assoc :format (ajax/url-request-format)))}))
 
 (reg-event-fx
  :success-http-result
  (fn [_ [_ {:keys [success] :as params} resp]]
    {:fx (cond-> [[:dispatch [:put-response params resp]]]
           (:event success)
-          (conj (->> [:dispatch (->> [(:event success) (:params params) resp]
+          (conj (->> [:dispatch (->> [(:event success) (:params success) resp]
                                      (remove nil?)
                                      (vec))])))}))
 

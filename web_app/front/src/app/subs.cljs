@@ -1,18 +1,18 @@
 (ns app.subs
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :refer [reg-sub]]))
 
-(rf/reg-sub
+(reg-sub
  ::active-page
  (fn [db _]
    (:active-page db)))
 
-(rf/reg-sub
+(reg-sub
  :active-popup-menu
  (fn [db [_ section]]
    (-> db :popup-menu (contains? section))))
 
-(rf/reg-sub
- :active-dialog
- (fn [db [_ section]]
-   (-> db :dialog-menu (contains? section))))
+(reg-sub
+ :dialog-state
+ (fn [db [_ dialog-id]]
+   (get-in db [:dialogs dialog-id])))
 
