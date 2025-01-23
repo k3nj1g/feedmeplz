@@ -56,22 +56,28 @@
    (when-let [pid (:pid params)]
      (assoc-in db [:http/response pid] resp))))
 
+(defn make-xhrio-request
+  [db request]
+  (cond-> (-> request
+              (update :uri (partial str (get-in db [:config :api-url])))
+              (merge {:timeout         8000
+                      :response-format (ajax/json-response-format {:keywords? true})
+                      :on-success      [:success-http-result request]
+                      :on-failure      [:bad-http-result]}))
+    (#{:post :put :patch} (:method request))
+    (-> (dissoc :body)
+        (assoc :params (:body request)
+               :format (ajax/json-request-format)))
+  
+    (= :delete (:method request))
+    (assoc :format (ajax/url-request-format))))
+
 (reg-event-fx
  :http/request
- (fn [{:keys [db]} [_ params]]
-   {:http-xhrio (cond-> (-> params
-                            (update :uri (partial str (get-in db [:config :api-url])))
-                            (merge {:timeout         8000
-                                    :response-format (ajax/json-response-format {:keywords? true})
-                                    :on-success      [:success-http-result params]
-                                    :on-failure      [:bad-http-result]}))
-                  (#{:post :put :patch} (:method params))
-                  (-> (dissoc :body)
-                      (assoc :params (:body params)
-                             :format (ajax/json-request-format)))
-
-                  (= :delete (:method params))
-                  (assoc :format (ajax/url-request-format)))}))
+ (fn [{:keys [db]} [_ request]]
+   {:http-xhrio (if (vector? request)
+                  (mapv (partial make-xhrio-request db) request)
+                  (make-xhrio-request db request))}))
 
 (reg-event-fx
  :success-http-result
@@ -89,7 +95,7 @@
             :type    :error}}))
 
 (reg-fx
- :http/request
+ `:http/request
  (fn [params]
    (dispatch [:http/request params])))
 

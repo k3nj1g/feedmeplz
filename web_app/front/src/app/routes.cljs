@@ -12,9 +12,10 @@
 ;; Route definitions
 (def routes
   "Application routes"
-  ["/" {""              :home
-        "menu"          :menu
-        "admin-catalog" :admin-catalog}])
+  ["/" {""                 :home
+        "menu"             :menu
+        "admin-catalog"    :admin-catalog
+        "admin-daily" :admin-daily}])
 
 ;; URL parsing and generation
 (defn parse-url

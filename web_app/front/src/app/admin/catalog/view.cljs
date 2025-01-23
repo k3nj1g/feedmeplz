@@ -11,11 +11,6 @@
             [reagent-mui.material.dialog-title :refer [dialog-title]]
 
             [app.components.base :refer [button heading]]
-            ;; [app.components.ui.card :refer [Card CardContent]]
-            ;; [app.components.ui.dialog :refer [Dialog DialogContent DialogHeader DialogTitle DialogFooter]]
-            ;; [app.components.ui.button :refer [Button]]
-            ;; [app.components.ui.input :refer [Input]]
-            ;; [app.components.ui.textarea :refer [Textarea]]
             
             [app.routes :as routes]
 
