@@ -74,12 +74,15 @@
      [:div]
      [dialog-content
       [:div.grid.gap-1
-       [text-input form/form-path [:name]]
+       [text-input form/form-path [:name] 
+        {:adornment "₽"}]
        [text-input form/form-path [:description]]
        [:div.grid.grid-cols-3.gap-4
         [text-input form/form-path [:price]]
-        [text-input form/form-path [:weight]]
-        [text-input form/form-path [:kcals]]]]]
+        [text-input form/form-path [:weight]
+         {:adornment "г"}]
+        [text-input form/form-path [:kcals]
+         {:adornment "ккал"}]]]]
 
       [:div
        {:class ["px-4" "pb-4"]}

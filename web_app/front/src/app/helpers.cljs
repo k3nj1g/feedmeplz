@@ -8,3 +8,19 @@
      (fn dispatch
        ([]  (rf/dispatch event))
        ([_] (rf/dispatch event))))))
+
+(defn vectorize
+  [x]
+  (cond
+    (nil? x)
+    (vector)
+
+    (sequential? x)
+    (vec x)
+
+    :else
+    (vector x)))
+
+(defn in?
+  [elm coll]
+  (boolean (some #{elm} coll)))

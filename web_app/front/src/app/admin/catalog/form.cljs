@@ -11,13 +11,10 @@
                           :label "Описание"}
             :price       {:type       :number
                           :label      "Цена"
-                          :adornment  "₽"
                           :validators {:required {:message "Укажите цену"}}}
             :category_id {:type  :number
                           :label "Категория"}
-            :kcals       {:type      :number
-                          :label     "Калории"
-                          :adornment "ккал"}
-            :weight      {:type      :number
-                          :label     "Вес"
-                          :adornment "г"}}})
+            :kcals       {:type  :number
+                          :label "Калории"}
+            :weight      {:type  :number
+                          :label "Вес"}}})

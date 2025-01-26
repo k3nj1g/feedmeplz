@@ -1,16 +1,30 @@
 (ns app.admin.daily.model
-  (:require [re-frame.core :refer [reg-sub]]
+  (:require [clojure.string :as str]
             
-            [app.admin.daily.controller :as ctrl]))
+            [re-frame.core :refer [reg-sub subscribe]]
+
+            [app.admin.daily.controller :as ctrl]
+            [app.admin.daily.form       :as form]))
+
+(defn- match-all-terms?
+  [name search-terms]
+  (every? #(str/includes? (str/lower-case name) %) search-terms))
 
 (reg-sub
  ::categories
- (fn [db]
-   (->> db :http/response ::ctrl/categories)))
+ :<- [:http/response ::ctrl/categories]
+ (fn [categories _]
+   categories))
 
 (reg-sub
  ::dishes-by-category
- :<- [::categories]
- (fn [db [_ category-id]]
-   (->> db :http/response ::ctrl/categories
-        (filter #(= category-id (:category_id %))))))
+ (fn [[_ category] _]
+   [(subscribe [:http/response ::ctrl/dishes])
+    (subscribe [:zf/get-value form/form-path [(form/category->path category) :search]])])
+ (fn [[dishes search] [_ {category-id :id}]]
+   (let [search-terms (some-> search
+                              (str/lower-case)
+                              (str/split #"\s+"))]
+     (cond->> (filter #(= category-id (:category_id %)) dishes)
+       search
+       (filter #(match-all-terms? (:name %) search-terms))))))
