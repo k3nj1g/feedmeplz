@@ -3,7 +3,8 @@
             
             [app.server.db :refer [execute-query]]))
 
-(defn dishes-by-category [datasource]
+(defn dishes-by-category
+  [datasource]
   (fn [request]
     (let [category-id (get-in request [:params :category_id])
           dishes      (execute-query datasource
