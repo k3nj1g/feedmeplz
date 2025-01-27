@@ -11,5 +11,7 @@
    [mui-button
     (merge props (case (:type props)
                    "primary" (merge {:variant "contained"})
-                   {:variant "outlined"}))]
+                   "success" (merge {:variant "contained" :color "success"})
+                   "danger"  (merge {:variant "contained" :color "error"})
+                   {:variant "text"}))]
    children))

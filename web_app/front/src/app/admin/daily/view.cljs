@@ -1,5 +1,5 @@
 (ns app.admin.daily.view
-  (:require ["lucide-react" :refer [Plus X Save ChevronDown Search List]]
+  (:require ["lucide-react" :refer [X Save ChevronDown Search List]]
             [re-frame.core :refer [dispatch subscribe]]
 
             [reagent.core :as r]
@@ -13,9 +13,23 @@
             [app.helpers :as h]
 
             [app.admin.daily.form  :as form]
-            [app.admin.daily.model :as model]))
+            [app.admin.daily.model :as model])
+
+  (:require-macros [ps]))
 
 (def items-per-page 10)
+
+(defn set-value
+  [category dish]
+  (dispatch [:zf/set-value form/form-path [(form/category->path category) :dishes] dish]))
+
+(defn add-dish
+  [category selected-items item]
+  (set-value category (vec (conj (or selected-items []) item))))
+
+(defn remove-dish
+  [category selected-items item]
+  (set-value category (remove #(= (:id item) (:id %)) selected-items)))
 
 (defn header
   [show-selected]
@@ -27,13 +41,36 @@
     [:> List {:class "w-4 h-4 mr-2"}]
     (if @show-selected "Скрыть выбранное" "Показать выбранное")]])
 
-(defn chosen-dishes
+(defn selected-dishes-by-category
+  [category]
+  (let [selected-items @(subscribe [::model/selected-dishes-by-category category])]
+    (when (seq selected-items)
+      [:div.mb-4
+       [:h3.font-medium.mb-2 (:name category)]
+       [:div.grid.grid-cols-1.md:grid-cols-2.gap-2
+        (for [item (sort-by :name selected-items)]
+          ^{:key (:id item)}
+          [:div.p-3.bg-blue-50.rounded-lg.border.border-blue-200
+           [:div.flex.justify-between.items-center
+            [:span (:name item)]
+            [:div.flex.items-center
+             [:span.text-gray-600.mr-2 (str (:price item) " ₽")]
+             [:button.text-red-500.hover:text-red-700
+              {:on-click #(remove-dish category selected-items item)}
+              [:> X {:class "w-4 h-4"}]]]]])]])))
+
+(defn selected-dishes
   []
-  [card
-   {:class "mb-6"}
-   [card-header
-    {}
-    "Выбранные блюда"]])
+  (let [categories @(subscribe [::model/categories])]
+    [card
+     {:class "mb-6"}
+     [card-header
+      {}
+      "Выбранные блюда"]
+     [card-content
+      (for [category categories]
+        ^{:key (str "selected-" (:id category))}
+        [selected-dishes-by-category category])]]))
 
 (defn pages
   [active-page items]
@@ -54,8 +91,7 @@
   (let [active-page (r/atom 1)]
     (fn [active-category category]
       (let [dishes         @(subscribe [::model/dishes-by-category category])
-            selected-items @(subscribe [:zf/get-value form/form-path [(form/category->path category) :dishes]])
-            set-value      #(dispatch [:zf/set-value form/form-path [(form/category->path category) :dishes] %])]
+            selected-items @(subscribe [:zf/get-value form/form-path [(form/category->path category) :dishes]])]
         [:div
          [:button.w-full.bg-white.border.rounded-lg.shadow-sm
           {:on-click #(reset! active-category (if (= @active-category category) nil category))}
@@ -64,7 +100,8 @@
             {:on-click #(reset! active-category (if (= % category) nil category))}
             (:name category)]
            [:div.flex.items-center
-            [:span.mr-2.text-sm.text-gray-500 "Выбрано: 0"]
+            [:span.mr-2.text-sm.text-gray-500
+             (str "Выбрано: " (count selected-items))]
             [:> ChevronDown
              {:class (cond-> ["w-5" "h-5" "transform" "transition-transform"]
                        (= @active-category category)
@@ -82,12 +119,11 @@
                (for [item paginated-items]
                  ^{:key (:id item)}
                  [:div.p-3.rounded-lg.cursor-pointer.border
-                  {:class    (if (h/in? (:id item) selected-items)
-                               "bg-blue-100 border-blue-300"
-                               "bg-white border-gray-200")
-                   :on-click #(if (h/in? (:id item) selected-items)
-                                (set-value (vec (remove (partial = (:id item)) selected-items)))
-                                (set-value (vec (conj (or selected-items []) (:id item)))))}
+                  (if (h/in? (:id item) (map :id selected-items))
+                    {:class    "bg-blue-100 border-blue-300"
+                     :on-click #(remove-dish category selected-items item)}
+                    {:class    "bg-white border-gray-200"
+                     :on-click #(add-dish category selected-items item)})
                   [:div.flex.justify-between.items-center
                    [:span (:name item)]
                    [:span.text-gray-600 (str (:price item) " ₽")]]]))]
@@ -105,6 +141,21 @@
          ^{:key (:id category)}
          [dishes-by-category active-category category])]]]))
 
+(defn footer
+  []
+  (let [selected-items-count @(subscribe [::model/selected-items-count])]
+    (ps/persist-scope)
+    [:div.fixed.bottom-0.left-0.right-0.bg-white.shadow-lg.border-t
+     [:div.max-w-6xl.mx-auto.px-4.py-4.flex.justify-between.items-center
+      [:div
+       [:span.text-gray-600 "Выбрано блюд:"]
+       [:span.ml-2 selected-items-count]]
+      [button
+       {:type     "success"
+        :on-click #(dispatch [:save-daily-menu])}
+       [:> Save {:class "w-4 h-4 mr-2"}]
+       "Сохранить меню"]]]))
+
 (defn menu-day-management
   []
   (let [show-selected   (r/atom false)
@@ -113,7 +164,8 @@
       [:<>
        [header show-selected]
        (when @show-selected
-         [chosen-dishes])
-       [dishes-by-categories active-category]])))
+         [selected-dishes])
+       [dishes-by-categories active-category]
+       [footer]])))
 
 (defmethod app.routes/pages :admin-daily [] menu-day-management)

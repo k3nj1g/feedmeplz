@@ -1,5 +1,5 @@
 (ns app.admin.catalog.view
-  (:require ["lucide-react" :refer [Edit Trash2 Plus UtensilsCrossed]]
+  (:require ["lucide-react" :refer [Edit Save Trash2 Plus UtensilsCrossed]]
             
             [re-frame.core :refer [dispatch subscribe]]
 
@@ -87,8 +87,10 @@
       [:div
        {:class ["px-4" "pb-4"]}
        [dialog-actions
-        [button {:type "default" :on-click on-close} "Отмена"]
-        [button {:type "primary" :on-click on-save} "Сохранить"]]]]))
+        [button {:on-click on-close} "Отмена"]
+        [button {:type "success" :on-click on-save} 
+         [:> Save {:class "w-4 h-4 mr-2"}]
+         "Сохранить"]]]]))
 
 (defn delete-dish-dialog
   []
@@ -105,7 +107,9 @@
       {:class ["px-4" "pb-4"]}
       [dialog-actions
        [button {:type "default" :on-click on-close} "Отмена"]
-       [button {:type "primary" :color "error" :on-click on-delete} "Удалить"]]]]))
+       [button {:type "danger"  :on-click on-delete} 
+        [:> Trash2 {:class "w-4 h-4 mr-2"}]
+        "Удалить"]]]]))
 
 (defn header
   []

@@ -28,3 +28,19 @@
      (cond->> (filter #(= category-id (:category_id %)) dishes)
        search
        (filter #(match-all-terms? (:name %) search-terms))))))
+
+(reg-sub
+ ::selected-dishes-by-category
+ (fn [[_ category] _]
+   [(subscribe [:zf/get-value form/form-path [(form/category->path category) :dishes]])])
+ (fn [[selected-items] _]
+   (sort-by :name selected-items)))
+
+(reg-sub
+ ::selected-items-count
+ :<- [:zf/get-value form/form-path]
+ (fn [form-value _]
+   (->> form-value
+        (vals)
+        (mapcat :dishes)
+        (count))))
