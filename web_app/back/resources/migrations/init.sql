@@ -20,12 +20,22 @@ CREATE TABLE IF NOT EXISTS dishes (
 );
 
 --;;
-CREATE TABLE IF NOT EXISTS daily_menu (
+CREATE TABLE IF NOT EXISTS daily_menus (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,
-    dish_id INTEGER REFERENCES dishes(id),
+    is_published BOOLEAN DEFAULT FALSE,
+    published_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--;;
+CREATE TABLE IF NOT EXISTS daily_menu_items (
+    id SERIAL PRIMARY KEY,
+    daily_menu_id INTEGER REFERENCES daily_menus(id),
+    dish_id INTEGER REFERENCES dishes(id),
+    price DECIMAL(10, 2) NOT NULL,
+    UNIQUE (daily_menu_id, dish_id)
 );
 
 --;;

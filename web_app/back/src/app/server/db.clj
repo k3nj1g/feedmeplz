@@ -18,6 +18,14 @@
 (defn get-connection [datasource]
   (jdbc/get-connection datasource))
 
-(defn execute-query [datasource query]
-  (with-open [conn (get-connection datasource)]
-    (jdbc/execute! conn (sql/format query) {:builder-fn rs/as-unqualified-lower-maps})))
+(defn execute-query [datasource-or-conn query]
+  (if (instance? java.sql.Connection datasource-or-conn)
+    (jdbc/execute! datasource-or-conn (sql/format query) {:builder-fn rs/as-unqualified-lower-maps})
+    (with-open [conn (get-connection datasource-or-conn)]
+      (jdbc/execute! conn (sql/format query) {:builder-fn rs/as-unqualified-lower-maps}))))
+
+(defmacro with-transaction [[sym datasource] & body]
+  `(with-open [conn# (get-connection ~datasource)]
+     (jdbc/with-transaction [tx# conn#]
+       (let [~sym tx#]
+         ~@body))))

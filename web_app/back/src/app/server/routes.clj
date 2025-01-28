@@ -7,9 +7,10 @@
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
 
-            [app.handler                   :as handler]
-            [app.handlers.crud-handler     :as crud]
-            [app.handlers.category-handler :as category-handler]
+            [app.handler                     :as handler]
+            [app.handlers.crud-handler       :as crud]
+            [app.handlers.category-handler   :as category-handler]
+            [app.handlers.daily-menu-handler :as daily-menu-handler]
 
             [app.models.category   :as category]
             [app.models.daily-menu :as daily-menu]
@@ -44,11 +45,11 @@
      (DELETE "/dishes/:id" [] (crud/delete-handler dish-model))
 
      ;; Маршруты для ежедневного меню
-     (GET "/daily-menu" [] (crud/list-handler daily-menu-model))
-     (GET "/daily-menu/:id" [] (crud/read-handler daily-menu-model))
-     (POST "/daily-menu" [] (crud/create-handler daily-menu-model))
-     (PUT "/daily-menu/:id" [] (crud/update-handler daily-menu-model))
-     (DELETE "/daily-menu/:id" [] (crud/delete-handler daily-menu-model))
+     (GET "/daily-menu" [] (daily-menu-handler/list-handler daily-menu-model))
+     (GET "/daily-menu/:id" [] (daily-menu-handler/read-handler daily-menu-model))
+     (POST "/daily-menu" [] (daily-menu-handler/create-handler daily-menu-model))
+     (PUT "/daily-menu/:id" [] (daily-menu-handler/update-handler daily-menu-model))
+     (DELETE "/daily-menu/:id" [] (daily-menu-handler/delete-handler daily-menu-model))
 
      ;; Маршруты для пользователей
      (GET "/users" [] (crud/list-handler user-model))

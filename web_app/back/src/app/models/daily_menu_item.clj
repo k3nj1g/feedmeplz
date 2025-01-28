@@ -1,11 +1,15 @@
-(ns app.models.abstract-model
+(ns app.models.daily-menu-item
   (:require [app.helpers :as h]
-            
-            [app.models.crud :refer [CRUD]]
-            
+            [app.models.crud :as crud :refer [CRUD]]
             [app.server.db :refer [execute-query]]))
 
-(defrecord AbstractModel [table-name schema datasource]
+(def DailyMenuItemSchema
+  [:map
+   [:daily_menu_id :int]
+   [:dish_id :int]
+   [:price :double]])
+
+(defrecord DailyMenuItemModel [table-name schema datasource-or-tx]
   CRUD
   (create! [_ data]
     (if-let [errors (h/validate-data schema (or data {}))]
@@ -13,13 +17,13 @@
       (let [query {:insert-into table-name
                    :values      [data]
                    :returning   [:*]}]
-        (first (execute-query datasource query)))))
+        (first (execute-query datasource-or-tx query)))))
 
   (read [_ id]
     (let [query {:select [:*]
                  :from   [table-name]
                  :where  [:= :id [:cast id :integer]]}]
-      (first (execute-query datasource query))))
+      (first (execute-query datasource-or-tx query))))
 
   (update! [_ id data]
     (if-let [errors (h/validate-data schema data)]
@@ -28,15 +32,29 @@
                    :set       data
                    :where     [:= :id [:cast id :integer]]
                    :returning [:*]}]
-        (first (execute-query datasource query)))))
+        (first (execute-query datasource-or-tx query)))))
 
   (delete! [_ id]
     (let [query {:delete-from table-name
                  :where       [:= :id [:cast id :integer]]
                  :returning   [:*]}]
-      (first (execute-query datasource query))))
+      (first (execute-query datasource-or-tx query))))
 
   (list-all [_]
     (let [query {:select [:*]
                  :from   [table-name]}]
-      (execute-query datasource query))))
+      (execute-query datasource-or-tx query))))
+
+(defn model [datasource-or-tx]
+  (->DailyMenuItemModel :daily_menu_items DailyMenuItemSchema datasource-or-tx))
+
+(defn add-menu-item [datasource-or-tx daily-menu-id dish-id price]
+  (let [model (model datasource-or-tx)
+        data {:daily_menu_id daily-menu-id
+              :dish_id       dish-id
+              :price         price}]
+    (crud/create! model data)))
+
+(defn remove-menu-item [datasource-or-tx item-id]
+  (let [model (model datasource-or-tx)]
+    (crud/delete! model item-id)))
