@@ -1,5 +1,5 @@
 (ns app.admin.daily.view
-  (:require ["lucide-react" :refer [X Save ChevronDown Search List]]
+  (:require ["lucide-react" :refer [Calendar X Save ChevronDown Search List]]
             [re-frame.core :refer [dispatch subscribe]]
 
             [reagent.core :as r]
@@ -34,7 +34,11 @@
 (defn header
   [show-selected]
   [:div.flex.justify-between.items-center.mb-6
-   [heading "Меню дня"]
+   [heading [:div.flex.gap-2
+             "Меню дня"
+             [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.text
+              [:> Calendar {:class "w-4 h-4"}]
+              (.toLocaleDateString (js/Date.) "ru-RU" #js {:day "numeric" :month "long" :year "numeric"})]]]
    [button
     {:type     "primary"
      :on-click #(swap! show-selected not)}
@@ -152,7 +156,7 @@
        [:span.ml-2 selected-items-count]]
       [button
        {:type     "success"
-        :on-click #(dispatch [:save-daily-menu])}
+        :on-click model/save-action}
        [:> Save {:class "w-4 h-4 mr-2"}]
        "Сохранить меню"]]]))
 

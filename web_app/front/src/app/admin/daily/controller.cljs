@@ -1,6 +1,6 @@
 (ns app.admin.daily.controller
   (:require [re-frame.core :refer [reg-event-fx]]
-            
+
             [app.admin.daily.form :as form]))
 
 (reg-event-fx
@@ -27,8 +27,11 @@
 
 (reg-event-fx
  ::create-daily-menu
- (fn [_ [_ form-value]]
+ (fn [_ [_ {:keys [data]}]]
    {:http/request {:method  :post
                    :uri     "/daily-menu"
-                   :body    form-value
+                   :body    (->> data :form-value
+                                 vals
+                                 (mapcat (comp :dishes))
+                                 (hash-map :dishes))
                    :success {:event ::save-success}}}))

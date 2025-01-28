@@ -1,7 +1,7 @@
 (ns app.admin.daily.model
   (:require [clojure.string :as str]
             
-            [re-frame.core :refer [reg-sub subscribe]]
+            [re-frame.core :refer [dispatch reg-sub subscribe]]
 
             [app.admin.daily.controller :as ctrl]
             [app.admin.daily.form       :as form]))
@@ -44,3 +44,7 @@
         (vals)
         (mapcat :dishes)
         (count))))
+
+(defn save-action
+  []
+  (dispatch [::ctrl/save-daily-menu-flow]))
