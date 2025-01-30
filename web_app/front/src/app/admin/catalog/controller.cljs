@@ -76,7 +76,7 @@
 (reg-event-fx
  ::delete-success
  (fn [_ [_ dish]]
-   {:toast {:message "Блюдо успешно удалено"
+   {:toast {:message "Блюдо удалено"
             :type    :warning}
     :fx    [[:dispatch [:close-dialog :delete-dish]]
             [:dispatch [::get-dishes-by-category (:category_id dish)]]]}))

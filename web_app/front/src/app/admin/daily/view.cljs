@@ -147,7 +147,8 @@
 
 (defn footer
   []
-  (let [selected-items-count @(subscribe [::model/selected-items-count])]
+  (let [selected-items-count @(subscribe [::model/selected-items-count])
+        {:keys [save]}       @(subscribe [::model/buttons])]
     (ps/persist-scope)
     [:div.fixed.bottom-0.left-0.right-0.bg-white.shadow-lg.border-t
      [:div.max-w-6xl.mx-auto.px-4.py-4.flex.justify-between.items-center
@@ -155,8 +156,7 @@
        [:span.text-gray-600 "Выбрано блюд:"]
        [:span.ml-2 selected-items-count]]
       [button
-       {:type     "success"
-        :on-click model/save-action}
+       (assoc save :type "success")
        [:> Save {:class "w-4 h-4 mr-2"}]
        "Сохранить меню"]]]))
 

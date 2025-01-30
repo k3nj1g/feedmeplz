@@ -1,8 +1,10 @@
 (ns app.admin.daily.model
   (:require [clojure.string :as str]
             
-            [re-frame.core :refer [dispatch reg-sub subscribe]]
+            [re-frame.core :refer [reg-sub subscribe]]
 
+            [app.helpers :as h]
+            
             [app.admin.daily.controller :as ctrl]
             [app.admin.daily.form       :as form]))
 
@@ -45,6 +47,9 @@
         (mapcat :dishes)
         (count))))
 
-(defn save-action
-  []
-  (dispatch [::ctrl/save-daily-menu-flow]))
+(reg-sub
+ ::buttons
+ :<- [::selected-items-count]
+ (fn [selected-items-count _]
+   {:save {:on-click (h/action [::ctrl/create-daily-menu-flow])
+           :disabled (= selected-items-count 0)}}))

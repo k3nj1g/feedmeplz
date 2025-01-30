@@ -24,3 +24,11 @@
 (defn in?
   [elm coll]
   (boolean (some #{elm} coll)))
+
+(defn success-event-to-dispatch
+  [success data]
+  [(:event success) (assoc (:params success) :data data)])
+
+(defn success-event
+  ([success data]
+   (assoc-in success [:params :data] data)))

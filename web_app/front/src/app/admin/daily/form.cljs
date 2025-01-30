@@ -9,11 +9,13 @@
 (defn form-schema
   [categories]
   {:type   :form
-   :fields (reduce 
-            (fn [acc category]
-              (assoc acc (category->path category) {:type   :form
-                                                    :fields {:search {:type :string}
-                                                             :dishes {:type :vector}}}))
-            {}
-            categories)})
+   :fields (merge
+            {:date {:type :string}}
+            (reduce
+             (fn [acc category]
+               (assoc acc (category->path category) {:type   :form
+                                                     :fields {:search {:type :string}
+                                                              :dishes {:type :vector}}}))
+             {}
+             categories))})
 
