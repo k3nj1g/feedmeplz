@@ -5,4 +5,4 @@
   (read [this id])
   (update! [this id data])
   (delete! [this id])
-  (list-all [this]))
+  (list-all [this query-params]))

@@ -1,12 +1,18 @@
 (ns app.handlers.daily-menu-handler
   (:require [ring.util.response :as response]
-            [java-time :as jt]
+            [java-time.api :as jt]
             
             [app.models.crud :as crud]
             [app.models.daily-menu :as daily-menu]
             [app.models.daily-menu-item :as daily-menu-item]
             [app.server.db :refer [with-transaction]]
-            [app.macro :refer [persist-scope]]))
+
+            [app.helpers :as h]))
+
+(defn prepare-data
+  [data]
+  (-> data
+      (update :price h/as-double)))
 
 (defn create-handler [datasource]
   (fn [request]
@@ -14,28 +20,33 @@
           current-date (jt/local-date)]
       (if (jt/before? (jt/local-date date) current-date)
         (response/bad-request "Menu date cannot be earlier than the current date")
-        (with-transaction [tx datasource]
-          (try
-            (persist-scope)
-            (let [menu (crud/create! (daily-menu/model tx) {:date date})
-                  menu-items (map (fn [{:keys [dish_id price]}]
-                                    (daily-menu-item/add-menu-item tx (:id menu) dish_id price))
-                                  dishes)]
-              (response/created "" {:menu menu :menu_items menu-items}))
-            (catch Exception e
-              (response/bad-request {:error (.getMessage e)}))))))))
+        (try
+          (with-transaction [tx datasource]
+            (let [menu       (crud/create! (daily-menu/model tx) {:date date})
+                  menu-items (doall
+                              (map
+                               (fn [{:keys [price] dish-id :id}]
+                                 (crud/create! (daily-menu-item/model tx)
+                                               (prepare-data {:daily_menu_id (:id menu)
+                                                              :dish_id       dish-id
+                                                              :price         price})))
+                               dishes))]
+              (response/created "" {:menu menu :menu_items menu-items})))
+          (catch Exception e
+            (response/bad-request {:error (.getMessage e)})))))))
 
 (defn read-handler [datasource]
   (fn [request]
-    (let [id (get-in request [:path-params :id])
+    (let [id   (get-in request [:path-params :id])
           menu (crud/read (daily-menu/model datasource) id)]
       (if menu
         (response/response menu)
         (response/not-found "Not found")))))
 
 (defn list-handler [datasource]
-  (fn [_]
-    (let [menus (crud/list-all (daily-menu/model datasource))]
+  (fn [request]
+    (app.macro/persist-scope)
+    (let [menus (crud/list-all (daily-menu/model datasource) (:query-params request))]
       (response/response menus))))
 
 (defn update-handler [datasource]

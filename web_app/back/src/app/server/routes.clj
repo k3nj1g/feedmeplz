@@ -4,25 +4,24 @@
             [compojure.core  :refer [routes DELETE GET POST PUT]]
             [compojure.route :refer [not-found]]
 
-            [ring.middleware.cors :refer [wrap-cors]]
-            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.cors   :refer [wrap-cors]]
+            [ring.middleware.json   :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.params :refer [wrap-params]]
 
             [app.handler                     :as handler]
             [app.handlers.crud-handler       :as crud]
             [app.handlers.category-handler   :as category-handler]
             [app.handlers.daily-menu-handler :as daily-menu-handler]
 
-            [app.models.category   :as category]
-            [app.models.daily-menu :as daily-menu]
-            [app.models.dish       :as dish]
-            [app.models.order      :as order]
-            [app.models.user       :as user]))
+            [app.models.category :as category]
+            [app.models.dish     :as dish]
+            [app.models.order    :as order]
+            [app.models.user     :as user]))
 
 (defn create-routes
   [datasource]
   (let [dish-model       (dish/model datasource)
         category-model   (category/model datasource)
-        daily-menu-model (daily-menu/model datasource)
         user-model       (user/model datasource)
         order-model      (order/model datasource)]
     (routes
@@ -45,11 +44,11 @@
      (DELETE "/dishes/:id" [] (crud/delete-handler dish-model))
 
      ;; Маршруты для ежедневного меню
-     (GET "/daily-menu" [] (daily-menu-handler/list-handler daily-menu-model))
-     (GET "/daily-menu/:id" [] (daily-menu-handler/read-handler daily-menu-model))
-     (POST "/daily-menu" [] (daily-menu-handler/create-handler daily-menu-model))
-     (PUT "/daily-menu/:id" [] (daily-menu-handler/update-handler daily-menu-model))
-     (DELETE "/daily-menu/:id" [] (daily-menu-handler/delete-handler daily-menu-model))
+     (GET "/daily-menu" [] (daily-menu-handler/list-handler datasource))
+     (GET "/daily-menu/:id" [] (daily-menu-handler/read-handler datasource))
+     (POST "/daily-menu" [] (daily-menu-handler/create-handler datasource))
+     (PUT "/daily-menu/:id" [] (daily-menu-handler/update-handler datasource))
+     (DELETE "/daily-menu/:id" [] (daily-menu-handler/delete-handler datasource))
 
      ;; Маршруты для пользователей
      (GET "/users" [] (crud/list-handler user-model))
@@ -81,6 +80,7 @@
   [datasource]
   (-> (create-routes datasource)
       wrap-exception-handling
+      wrap-params
       wrap-json-response
       (wrap-json-body {:keywords? true})
       (wrap-cors :access-control-allow-origin [#"http://localhost:8280"]

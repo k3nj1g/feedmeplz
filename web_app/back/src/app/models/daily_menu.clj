@@ -9,7 +9,7 @@
    [:date [:time/local-date]]
    [:is_published {:optional true} [:boolean]]])
 
-(defrecord DailyMenuModel [table-name schema datasource]
+(defrecord DailyMenuModel [table-name schema datasource-or-tx]
   CRUD
   (create! [_ data]
     (persist-scope)
@@ -18,7 +18,7 @@
       (let [query {:insert-into table-name
                    :values      [data]
                    :returning   [:*]}]
-        (first (execute-query datasource query)))))
+        (first (execute-query datasource-or-tx query)))))
 
   (read [_ id]
     (let [query {:select    [:dm.* [:array_agg :dmi.*] :menu_items]
@@ -26,7 +26,7 @@
                  :left-join [[:daily_menu_items :dmi] [:= :dm.id :dmi.daily_menu_id]]
                  :where     [:= :dm.id [:cast id :integer]]
                  :group-by  [:dm.id]}]
-      (first (execute-query datasource query))))
+      (first (execute-query datasource-or-tx query))))
 
   (update! [_ id data]
     (if-let [errors (h/validate-data schema data)]
@@ -35,20 +35,29 @@
                    :set       data
                    :where     [:= :id [:cast id :integer]]
                    :returning [:*]}]
-        (first (execute-query datasource query)))))
+        (first (execute-query datasource-or-tx query)))))
 
   (delete! [_ id]
     (let [query {:delete-from table-name
                  :where       [:= :id [:cast id :integer]]
                  :returning   [:*]}]
-      (first (execute-query datasource query))))
+      (first (execute-query datasource-or-tx query))))
   
-  (list-all [_]
-    (let [query {:select    [:dm.* [:array_agg :dmi.*] :menu_items]
-                 :from      [[table-name :dm]]
-                 :left-join [[:daily_menu_items :dmi] [:= :dm.id :dmi.daily_menu_id]]
-                 :group-by  [:dm.id]}]
-      (execute-query datasource query))))
+  (list-all [_ {:keys [date] :as _query-params}]
+    (let [query (cond-> {:select   [:dm.*
+                                    [[:jsonb_agg [:to_jsonb :dmi.*]] :menu_items]]
+                         :from     [[table-name :dm]]
+                         :join     [[:daily_menu_items :dmi]
+                                    [:= :dm.id :dmi.daily_menu_id]]
+                         :where    (cond-> [:and true]
+                                     date
+                                     (conj [:= :date [:cast date :date]]))
+                         :group-by [:dm.id]})]
+      (app.macro/persist-scope)
+      (->> (execute-query datasource-or-tx query)
+           (mapv (fn [row]
+                   {:menu (dissoc row :menu_items)
+                    :menu-items (:menu_items row)}))))))
 
 (defn model [datasource]
   (->DailyMenuModel :daily_menus DailyMenuSchema datasource))

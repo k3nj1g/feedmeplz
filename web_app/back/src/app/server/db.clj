@@ -4,7 +4,8 @@
             [hikari-cp.core :as hikari]
 
             [next.jdbc            :as jdbc]
-            [next.jdbc.result-set :as rs]))
+            [next.jdbc.result-set :as rs]
+            [app.macro]))
 
 (defn create-datasource [db-spec]
   (hikari/make-datasource db-spec))
@@ -25,7 +26,6 @@
       (jdbc/execute! conn (sql/format query) {:builder-fn rs/as-unqualified-lower-maps}))))
 
 (defmacro with-transaction [[sym datasource] & body]
-  `(with-open [conn# (get-connection ~datasource)]
-     (jdbc/with-transaction [tx# conn#]
-       (let [~sym tx#]
-         ~@body))))
+  `(jdbc/with-transaction [tx# ~datasource]
+     (let [~sym tx#]
+       ~@body)))

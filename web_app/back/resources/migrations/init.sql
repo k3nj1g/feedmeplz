@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS dishes (
 --;;
 CREATE TABLE IF NOT EXISTS daily_menus (
     id SERIAL PRIMARY KEY,
-    date DATE NOT NULL,
+    date DATE UNIQUE NOT NULL,
     is_published BOOLEAN DEFAULT FALSE,
     published_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
