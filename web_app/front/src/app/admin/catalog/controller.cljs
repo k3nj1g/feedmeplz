@@ -10,14 +10,19 @@
    {:http/request {:method  :get
                    :uri     "/categories"
                    :pid     ::categories
-                   :success {:event ::set-active-category}}}))
+                   :success {:event ::init-active-category}}}))
+
+(reg-event-fx
+ ::init-active-category
+ (fn [_ [_ categories]]
+   (let [category (first categories)]
+     {:dispatch [::set-active-category category]})))
 
 (reg-event-fx
  ::set-active-category
- (fn [{db :db} [_ categories]]
-   (let [category (first categories)]
-     {:db       (assoc-in db [:page :active-category] category)
-      :dispatch [::get-dishes-by-category (:id category)]})))
+ (fn [{db :db} [_ category]]
+   {:db       (assoc-in db [:page :active-category] category)
+    :dispatch [::get-dishes-by-category (:id category)]}))
 
 (reg-event-fx
  ::get-dishes-by-category

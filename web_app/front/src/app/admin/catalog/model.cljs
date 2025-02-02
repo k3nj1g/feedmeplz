@@ -1,9 +1,10 @@
 (ns app.admin.catalog.model
-  (:require [re-frame.core :refer [reg-sub]]
+  (:require [re-frame.core :refer [dispatch reg-sub]]
             
             [app.helpers :as h]
             
-            [app.admin.catalog.controller :as ctrl]))
+            [app.admin.catalog.controller :as ctrl])
+  (:require-macros [ps]))
 
 (reg-sub
  ::data
@@ -12,8 +13,13 @@
 
 (reg-sub
  ::categories
- (fn [db]
-   (->> db :http/response ::ctrl/categories)))
+ :<- [:http/response ::ctrl/categories]
+ (fn [categories _]
+   categories))
+
+(defn change-category
+  [category]
+  (dispatch [::ctrl/set-active-category category]))
 
 (reg-sub
  ::dishes-by-category

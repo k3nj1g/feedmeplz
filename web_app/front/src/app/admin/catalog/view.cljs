@@ -34,8 +34,7 @@
    [:> UtensilsCrossed {:class "w-12 h-12 text-gray-400 mb-4"}]
    [:h3.text-lg.font-medium.text-gray-900.mb-1 "В этой категории пока нет блюд"]
    [:p.text-sm.text-gray-500.mb-4.text-center
-    "Добавьте новые блюда, нажав на кнопку \"Добавить блюдо\" вверху страницы"]
-   [add-dish-button]])
+    "Добавьте новые блюда, нажав на кнопку \"Добавить блюдо\" вверху страницы"]])
 
 (defn dish-card
   [{:keys [on-edit on-delete] :as dish}]
@@ -65,7 +64,7 @@
         on-close               #(dispatch [:close-dialog :edit-dish])
         {:keys [dish on-save]} @(subscribe [::model/edit-dish-dialog-data])]
     [dialog
-     {:open       open
+     {:open       (boolean open)
       :full-width true
       :max-width  "sm"}
      [dialog-title
@@ -98,7 +97,7 @@
         on-close #(dispatch [:close-dialog :delete-dish])
         {:keys [dish on-delete]} @(subscribe [::model/delete-dish-dialog-data])]
     [dialog
-     {:open open
+     {:open     (boolean open)
       :on-close on-close}
      [dialog-title "Удалить блюдо"]
      [dialog-content
@@ -122,14 +121,15 @@
   (let [categories @(subscribe [::model/categories])]
     [:div.w-64.pr-6
      [:div.bg-white.rounded-lg.shadow
-      (for [category categories]
-        ^{:key (:id category)}
-        [:button.w-full.text-left.px-4.py-3.hover:bg-gray-50
-         {:class    (if (= (:id active-category) (:id category))
-                      ["bg-blue-50" "text-blue-600"]
-                      "text-gray-700")
-          :on-click #(dispatch [:db/set [:page :active-category] category])}
-         (:name category)])]]))
+      (doall
+       (for [category categories]
+         ^{:key (:id category)}
+         [:button.w-full.text-left.px-4.py-3.hover:bg-gray-50
+          {:class    (if (= (:id active-category) (:id category))
+                       ["bg-blue-50" "text-blue-600"]
+                       "text-gray-700")
+           :on-click (partial model/change-category category)}
+          (:name category)]))]]))
 
 (defn category-content
   [active-category]
