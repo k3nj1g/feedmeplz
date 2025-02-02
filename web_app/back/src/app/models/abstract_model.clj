@@ -36,7 +36,7 @@
                  :returning   [:*]}]
       (first (execute-query datasource query))))
 
-  (list-all [_]
+  (list-all [_ _query_params]
     (let [query {:select [:*]
                  :from   [table-name]}]
       (execute-query datasource query))))

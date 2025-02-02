@@ -45,7 +45,6 @@
 
 (defn list-handler [datasource]
   (fn [request]
-    (app.macro/persist-scope)
     (let [menus (crud/list-all (daily-menu/model datasource) (:query-params request))]
       (response/response menus))))
 

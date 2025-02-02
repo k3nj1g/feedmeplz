@@ -1,11 +1,12 @@
 (ns app.server.db
-  (:require [integrant.core :as ig]
-            [honey.sql      :as sql]
+  (:require [honey.sql      :as sql]
+            [integrant.core :as ig]
             [hikari-cp.core :as hikari]
 
             [next.jdbc            :as jdbc]
             [next.jdbc.result-set :as rs]
-            [app.macro]))
+
+            [app.server.next-jdbc-config]))
 
 (defn create-datasource [db-spec]
   (hikari/make-datasource db-spec))

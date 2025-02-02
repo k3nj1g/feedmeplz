@@ -45,15 +45,25 @@
   
   (list-all [_ {:keys [date] :as _query-params}]
     (let [query (cond-> {:select   [:dm.*
-                                    [[:jsonb_agg [:to_jsonb :dmi.*]] :menu_items]]
+                                    [[:jsonb_agg 
+                                      [:||
+                                       [:to_jsonb :dmi.*]
+                                       [:jsonb_build_object
+                                        "name" :d.name
+                                        "category_id" :c.id]]] :menu_items]]
                          :from     [[table-name :dm]]
                          :join     [[:daily_menu_items :dmi]
-                                    [:= :dm.id :dmi.daily_menu_id]]
+                                    [:= :dm.id :dmi.daily_menu_id]
+                                    
+                                    [:dishes :d]
+                                    [:= :d.id :dmi.dish_id]
+                                    
+                                    [:categories :c]
+                                    [:= :d.category_id :c.id]]
                          :where    (cond-> [:and true]
                                      date
                                      (conj [:= :date [:cast date :date]]))
                          :group-by [:dm.id]})]
-      (app.macro/persist-scope)
       (->> (execute-query datasource-or-tx query)
            (mapv (fn [row]
                    {:menu (dissoc row :menu_items)

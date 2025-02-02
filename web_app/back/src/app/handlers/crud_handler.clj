@@ -34,6 +34,6 @@
       (response/response result))))
 
 (defn list-handler [model]
-  (fn [_]
-    (let [result (crud/list-all model)]
+  (fn [request]
+    (let [result (crud/list-all model (:query-params request))]
       (response/response result))))
