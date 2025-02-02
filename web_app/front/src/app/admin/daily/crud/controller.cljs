@@ -1,13 +1,14 @@
-(ns app.admin.daily.controller
+(ns app.admin.daily.crud.controller
   (:require [re-frame.core :refer [reg-event-fx]]
 
             [tick.core :as t]
 
-            [app.admin.daily.form :as form]
-            [app.helpers :as h]))
+            [app.helpers :as h]
+            
+            [app.admin.daily.crud.form :as form]))
 
 (reg-event-fx
- :admin-daily
+ :admin-daily-crud
  (fn [& _]
    {:http/request [{:method :get
                     :uri    "/categories"
@@ -76,6 +77,7 @@
 
 (reg-event-fx
  ::save-success
- (fn [_ [_ _ daily-menu]]
-   {:toast {:message "Меню успешно сохранено"
-            :type    :success}}))
+ (fn [& _]
+   {:toast    {:message "Меню успешно сохранено"
+               :type    :success}
+    :dispatch [:navigate :admin-daily-list]}))

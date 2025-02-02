@@ -1,12 +1,12 @@
-(ns app.admin.daily.model
+(ns app.admin.daily.crud.model
   (:require [clojure.string :as str]
             
             [re-frame.core :refer [reg-sub subscribe]]
 
             [app.helpers :as h]
             
-            [app.admin.daily.controller :as ctrl]
-            [app.admin.daily.form       :as form]))
+            [app.admin.daily.crud.controller :as ctrl]
+            [app.admin.daily.crud.form       :as form]))
 
 (defn- match-all-terms?
   [name search-terms]

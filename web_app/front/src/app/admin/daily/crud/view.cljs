@@ -1,4 +1,4 @@
-(ns app.admin.daily.view
+(ns app.admin.daily.crud.view
   (:require ["lucide-react" :refer [Calendar X Save ChevronDown Search List]]
             [re-frame.core :refer [dispatch subscribe]]
 
@@ -10,10 +10,11 @@
 
             [app.routes :as routes]
 
-            [app.helpers :as h]
+            [app.helpers    :as h]
+            [app.utils.date :as date-utils]
 
-            [app.admin.daily.form  :as form]
-            [app.admin.daily.model :as model])
+            [app.admin.daily.crud.form  :as form]
+            [app.admin.daily.crud.model :as model])
 
   (:require-macros [ps]))
 
@@ -38,7 +39,7 @@
              "Меню дня"
              [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.text
               [:> Calendar {:class "w-4 h-4"}]
-              (.toLocaleDateString (js/Date.) "ru-RU" #js {:day "numeric" :month "long" :year "numeric"})]]]
+              (date-utils/->ru-verbose (js/Date.))]]]
    [button
     {:type     "primary"
      :on-click #(swap! show-selected not)}
@@ -172,4 +173,4 @@
        [dishes-by-categories active-category]
        [footer]])))
 
-(defmethod app.routes/pages :admin-daily [] menu-day-management)
+(defmethod app.routes/pages :admin-daily-crud [] menu-day-management)

@@ -15,7 +15,8 @@
   ["/" {""                 :home
         "menu"             :menu
         "admin-catalog"    :admin-catalog
-        "admin-daily" :admin-daily}])
+        "admin-daily-list" :admin-daily-list
+        "admin-daily-crud" :admin-daily-crud}])
 
 ;; URL parsing and generation
 (defn parse-url
@@ -33,7 +34,7 @@
   "Dispatch a route to the appropriate handler"
   [route]
   (rf/dispatch [::events/set-active-page
-                {:page (:handler route)
+                {:page         (:handler route)
                  :route-params (:route-params route)}]))
 
 (def history

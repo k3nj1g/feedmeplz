@@ -27,7 +27,7 @@
                           [:> ChevronDown {:class ["w-4" "h-4" "ml-1"]}]]}
     :content   [:div.py-1
                 [admin-menu-item "Каталог блюд" :admin-catalog]
-                [admin-menu-item "Меню дня" :admin-daily]
+                [admin-menu-item "Меню дня" :admin-daily-list]
                 [admin-menu-item "Пользователи" :admin-users]
                 [admin-menu-item "Роли" :admin-roles]]
     :placement :top}])

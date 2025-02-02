@@ -1,4 +1,4 @@
-(ns app.admin.daily.form)
+(ns app.admin.daily.crud.form)
 
 (def form-path [:form :daily])
 
