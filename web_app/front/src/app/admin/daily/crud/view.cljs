@@ -34,17 +34,19 @@
 
 (defn header
   [show-selected]
-  [:div.flex.justify-between.items-center.mb-6
-   [heading [:div.flex.gap-2
-             "Меню дня"
-             [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.text
-              [:> Calendar {:class "w-4 h-4"}]
-              (date-utils/->ru-verbose (js/Date.))]]]
-   [button
-    {:type     "primary"
-     :on-click #(swap! show-selected not)}
-    [:> List {:class "w-4 h-4 mr-2"}]
-    (if @show-selected "Скрыть выбранное" "Показать выбранное")]])
+  (let [date @(subscribe [::model/daily-menu-date])]
+    (prn date)
+    [:div.flex.justify-between.items-center.mb-6
+     [heading [:div.flex.gap-2
+               "Меню дня"
+               [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.text
+                [:> Calendar {:class "w-4 h-4"}]
+                (date-utils/->ru-verbose (if date (js/Date. date) (js/Date.)))]]]
+     [button
+      {:type     "primary"
+       :on-click #(swap! show-selected not)}
+      [:> List {:class "w-4 h-4 mr-2"}]
+      (if @show-selected "Скрыть выбранное" "Показать выбранное")]]))
 
 (defn selected-dishes-by-category
   [category]
@@ -173,4 +175,5 @@
        [dishes-by-categories active-category]
        [footer]])))
 
-(defmethod app.routes/pages :admin-daily-crud [] menu-day-management)
+(defmethod app.routes/pages :admin-daily-create [] menu-day-management)
+(defmethod app.routes/pages :admin-daily-update [] menu-day-management)

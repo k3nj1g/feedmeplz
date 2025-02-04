@@ -12,11 +12,12 @@
 ;; Route definitions
 (def routes
   "Application routes"
-  ["/" {""                 :home
-        "menu"             :menu
-        "admin-catalog"    :admin-catalog
-        "admin-daily-list" :admin-daily-list
-        "admin-daily-crud" :admin-daily-crud}])
+  ["/" {""                  :home
+        "menu"              :menu
+        "admin-catalog"     :admin-catalog
+        "admin-daily-list"  :admin-daily-list
+        "admin-daily-crud/" {""    :admin-daily-create
+                             [:id] :admin-daily-update}}])
 
 ;; URL parsing and generation
 (defn parse-url
@@ -26,8 +27,8 @@
 
 (defn url-for
   "Generate a URL for a given route"
-  [& args]
-  (apply bidi/path-for (into [routes] args)))
+  [handler]
+  (apply bidi/path-for routes handler))
 
 ;; Navigation handling
 (defn dispatch
@@ -35,7 +36,8 @@
   [route]
   (rf/dispatch [::events/set-active-page
                 {:page         (:handler route)
-                 :route-params (:route-params route)}]))
+                 :route-params (:route-params route)}])
+  (rf/dispatch [:db/set :route-params (:route-params route)]))
 
 (def history
   "Pushy history object for handling browser history"

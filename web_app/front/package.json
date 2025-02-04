@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "@cspell/dict-clojure": "^2.0.6",
+    "@cspell/dict-ru_ru": "^2.2.4",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
     "@heroicons/react": "^2.0.14",

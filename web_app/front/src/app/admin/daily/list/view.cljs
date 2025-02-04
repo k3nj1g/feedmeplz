@@ -17,7 +17,7 @@
   []
   [button
    {:type     "primary"
-    :on-click #(dispatch [:navigate :admin-daily-crud])}
+    :on-click #(dispatch [:navigate :admin-daily-create])}
    [:> Plus {:class "w-4 h-4 mr-2"}]
    "Создать меню"])
 
@@ -57,7 +57,7 @@
        [:div
         [:h3.font-medium (date-utils/->ru-verbose (:date menu))]
         [:p.text-sm.text-gray-500
-         (str "Блюд: " (reduce + (map count menu-items)))]]]
+         (str "Блюд: " (count menu-items))]]]
       [:div.flex.items-center.space-x-2
        [:button.p-2.hover:bg-gray-100.rounded-full
         {:on-click #(swap! expanded-menu-id (fn [current-id]
@@ -67,7 +67,9 @@
         [:> ChevronDown {:class ["w-5" "h-5" "transform" "transition-transform"
                                  (when (= @expanded-menu-id (:id menu)) "rotate-180")]}]]
        [:button.p-2.hover:bg-gray-100.rounded-full
-        [:> Edit {:class ["w-5" "h-5" "text-blue-500"]}]]
+        [:> Edit 
+         {:class ["w-5" "h-5" "text-blue-500"]
+          :on-click #(dispatch [:navigate :admin-daily-update {:id (:id menu)}])}]]
        [:button.p-2.hover:bg-gray-100.rounded-full
         [:> Trash2 {:class ["w-5" "h-5" "text-red-500"]}]]]]
      (when (= @expanded-menu-id (:id menu))

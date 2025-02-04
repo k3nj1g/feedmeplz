@@ -6,8 +6,7 @@
  (fn [& _]
    {:http/request [{:method :get
                     :uri    "/categories"
-                    :pid    ::categories
-                    :success {:event ::init-form}}
+                    :pid    ::categories}
                    {:method :get
-                    :uri    "/daily-menu"
+                    :uri    "/daily-menus"
                     :pid    ::daily-menus}]}))

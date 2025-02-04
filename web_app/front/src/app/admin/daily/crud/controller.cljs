@@ -7,22 +7,56 @@
             
             [app.admin.daily.crud.form :as form]))
 
+;;--- Init events ---
 (reg-event-fx
- :admin-daily-crud
+ :admin-daily-create
  (fn [& _]
    {:http/request [{:method :get
                     :uri    "/categories"
                     :pid    ::categories
-                    :success {:event ::init-form}}
+                    :success {:event ::init-blank-form}}
                    {:method :get
                     :uri    "/dishes"
                     :pid    ::dishes}]}))
 
 (reg-event-fx
- ::init-form
+ ::init-blank-form
  (fn [_ [_ categories]]
    {:dispatch [:zf/init form/form-path (form/form-schema categories) {:date (t/date)}]}))
 
+(reg-event-fx
+ :admin-daily-update
+ (fn [_ [_ params]]
+   {:http/request [{:method :get
+                    :uri    "/categories"
+                    :pid    ::categories}
+                   {:method :get
+                    :uri    "/dishes"
+                    :pid    ::dishes}
+                   {:method  :get
+                    :uri     (str "/daily-menus/" (:id params))
+                    :pid     ::daily-menu
+                    :success {:event ::init-form}}]}))
+
+(reg-event-fx
+ ::init-form
+ (fn [{db :db} [_ daily-menu]]
+   (let [categories (get-in db [:http/response ::categories])
+         dishes     (get-in db [:http/response ::dishes])
+         init-data  (->> daily-menu :menu_items
+                         (group-by :category_id)
+                         (reduce-kv
+                          (fn [acc k v]
+                            (assoc acc (form/category->path {:id k})
+                                   {:dishes (mapv
+                                             (fn [{dish-id :dish_id id :id}]
+                                               (some #(when (= (:id %) dish-id)
+                                                        (assoc % :item-id id)) dishes)) v)})) {}))]
+     {:dispatch [:zf/init form/form-path (form/form-schema categories)
+                 (merge-with merge {:date (t/date (t/instant (:date daily-menu)))} init-data)]})))
+;;------
+
+;;--- Flow events ---
 (reg-event-fx
  ::create-daily-menu-flow
  (fn []
@@ -38,6 +72,16 @@
                                                :params {:success {:event ::save-success}}}}}}}}}}]}))
 
 (reg-event-fx
+ ::update-daily-menu-flow
+ (fn []
+   {:dispatch [:zf/eval-form form/form-path
+               {:success
+                {:event  ::check-menu-date
+                 :params {:success
+                          {:event  ::update-daily-menu
+                           :params {:success {:event ::save-success}}}}}}]}))
+
+(reg-event-fx
  ::check-menu-date
  (fn [_ [_ {:keys [success data]}]]
    (let [selected-date (get-in data [:form-value :date])]
@@ -51,8 +95,9 @@
  ::check-existing-menu
  (fn [_ [_ {:keys [success data]}]]
    (let [selected-date (get-in data [:form-value :date])]
+     
      {:http/request {:method  :get
-                     :uri     "/daily-menu"
+                     :uri     "/daily-menus"
                      :params  {:date selected-date}
                      :success (h/success-event success data)}})))
 
@@ -68,11 +113,24 @@
  ::create-daily-menu
  (fn [_ [_ {:keys [success data]}]]
    {:http/request {:method  :post
-                   :uri     "/daily-menu"
-                   :body    (->> data :form-value
-                                 vals
-                                 (mapcat (comp :dishes))
-                                 (hash-map :dishes))
+                   :uri     "/daily-menus"
+                   :body    {:date   (get-in data [:form-value :date])
+                             :dishes (->> data :form-value
+                                          (vals)
+                                          (mapcat (comp :dishes))
+                                          (remove nil?))}
+                   :success (h/success-event success data)}}))
+
+(reg-event-fx
+ ::update-daily-menu
+ (fn [{db :db} [_ {:keys [success data]}]]
+   {:http/request {:method  :put
+                   :uri     (str "/daily-menus/" (get-in db [:route-params :id]))
+                   :body    {:date   (get-in data [:form-value :date])
+                             :dishes (->> data :form-value
+                                          (vals)
+                                          (mapcat (comp :dishes))
+                                          (remove nil?))}
                    :success (h/success-event success data)}}))
 
 (reg-event-fx
@@ -81,3 +139,4 @@
    {:toast    {:message "Меню успешно сохранено"
                :type    :success}
     :dispatch [:navigate :admin-daily-list]}))
+;;------

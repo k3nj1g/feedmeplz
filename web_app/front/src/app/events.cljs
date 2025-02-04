@@ -12,15 +12,16 @@
 
 (reg-event-fx
  :navigate
- (fn [{db :db} [_ handler]]
-   {:navigate handler
-    :db       (dissoc db :page)}))
+ (fn [{db :db} [_ handler params]]
+   (cond-> {:navigate [handler params]}
+     (not= (:active-page db) handler)
+     (assoc :db (dissoc db :page :form :http/response :route-params)))))
 
 (reg-event-fx
  ::set-active-page
- (fn [{:keys [db]} [_ {:keys [page]}]]
+ (fn [{:keys [db]} [_ {:keys [page route-params]}]]
    {:db       (assoc db :active-page page)
-    :dispatch [page]}))
+    :dispatch [page route-params]}))
 
 (reg-event-db
  :toggle-popup-menu

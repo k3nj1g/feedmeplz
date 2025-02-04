@@ -19,6 +19,12 @@
    categories))
 
 (reg-sub
+ ::daily-menu-date
+ :<- [:http/response ::ctrl/daily-menu]
+ (fn [daily-menu _]
+   (:date daily-menu)))
+
+(reg-sub
  ::dishes-by-category
  (fn [[_ category] _]
    [(subscribe [:http/response ::ctrl/dishes])
@@ -50,6 +56,7 @@
 (reg-sub
  ::buttons
  :<- [::selected-items-count]
- (fn [selected-items-count _]
-   {:save {:on-click (h/action [::ctrl/create-daily-menu-flow])
+ :<- [:db/get [:route-params :id]] 
+ (fn [selected-items-count id _]
+   {:save {:on-click (h/action (if id [::ctrl/update-daily-menu-flow] [::ctrl/create-daily-menu-flow]))
            :disabled (= selected-items-count 0)}}))
