@@ -5,8 +5,9 @@
             [next.jdbc.prepare    :as prepare]
             [next.jdbc.result-set :as rs])
   (:import
-   (java.sql PreparedStatement)
-   (org.postgresql.util PGobject)))
+   (java.sql PreparedStatement Timestamp)
+   (org.postgresql.util PGobject)
+   (org.postgresql.jdbc PgArray)))
 
 (def ->json json/generate-string)
 
@@ -15,9 +16,8 @@
   (json/parse-string v keyword))
 
 (defn ->pgobject
-  "Transforms Clojure data to a PGobject that contains the data as
-                                  JSON. PGObject type defaults to `jsonb` but can be changed via
-                                  metadata key `:pgtype`"
+  "Transforms Clojure data to a PGobject that contains the data as JSON. 
+   PGObject type defaults to `jsonb` but can be changed via metadata key `:pgtype`"
   [x]
   (let [pgtype (or (:pgtype (meta x)) "jsonb")]
     (doto (PGobject.)
@@ -25,18 +25,15 @@
       (.setValue (->json x)))))
 
 (defn <-pgobject
-  "Transform PGobject containing `json` or `jsonb` value to Clojure
-                                  data."
-  [^org.postgresql.util.PGobject v]
+  "Transform PGobject containing `json` or `jsonb` value to Clojure data."
+  [^PGobject v]
   (let [type  (.getType v)
         value (.getValue v)]
     (if (#{"jsonb" "json"} type)
       (when value
         (with-meta (<-json value) {:pgtype type}))
       value)))
-
-                                ;; if a SQL parameter is a Clojure hash map or vector, it'll be transformed
-                                ;; to a PGobject for JSON/JSONB:
+                              
 (extend-protocol prepare/SettableParameter
   clojure.lang.IPersistentMap
   (set-parameter [m ^PreparedStatement s i]
@@ -45,20 +42,19 @@
   clojure.lang.IPersistentVector
   (set-parameter [v ^PreparedStatement s i]
     (.setObject s i (->pgobject v))))
-
-                                ;; if a row contains a PGobject then we'll convert them to Clojure data
-                                ;; while reading (if column is either "json" or "jsonb" type):
+                              
 (extend-protocol rs/ReadableColumn
-  org.postgresql.util.PGobject
-  (read-column-by-label [^org.postgresql.util.PGobject v _]
+  PGobject
+  (read-column-by-label [^PGobject v _]
     (<-pgobject v))
-  (read-column-by-index [^org.postgresql.util.PGobject v _2 _3]
-    (<-pgobject v)))
+  (read-column-by-index [^PGobject v _2 _3]
+    (<-pgobject v))
 
-                                ;; if a row contains a Timestamp then we'll convert it to a string as is
-(extend-protocol rs/ReadableColumn
-  java.sql.Timestamp
-  (read-column-by-label [^java.sql.Timestamp v _]
+  Timestamp
+  (read-column-by-label [^Timestamp v _]
     (-> v (java-time/instant) (str)))
-  (read-column-by-index [^java.sql.Timestamp v _2 _3]
-    (-> v (java-time/instant) (str))))
+  (read-column-by-index [^Timestamp v _2 _3]
+    (-> v (java-time/instant) (str)))
+
+  PgArray
+  (read-column-by-index [val _meta _idx] (vec (.getArray val))))

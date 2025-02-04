@@ -16,9 +16,8 @@
 
 (defn create-handler [datasource]
   (fn [request]
-    (let [{:keys [date dishes] :or {date (jt/local-date)}} (:body request)
-          current-date (jt/local-date)]
-      (if (jt/before? (jt/local-date date) current-date)
+    (let [{:keys [date dishes] :or {date (jt/local-date)}} (:body request)]
+      (if (jt/before? (jt/local-date date) (jt/local-date))
         (response/bad-request "Menu date cannot be earlier than the current date")
         (try
           (with-transaction [tx datasource]
@@ -37,7 +36,7 @@
 
 (defn read-handler [datasource]
   (fn [request]
-    (let [id   (get-in request [:path-params :id])
+    (let [id   (get-in request [:params :id])
           menu (crud/read (daily-menu/model datasource) id)]
       (if menu
         (response/response menu)
@@ -45,21 +44,35 @@
 
 (defn list-handler [datasource]
   (fn [request]
-    (let [menus (crud/list-all (daily-menu/model datasource) (:query-params request))]
+    (let [menus (crud/list-all (daily-menu/model datasource) (:params request))]
       (response/response menus))))
 
 (defn update-handler [datasource]
   (fn [request]
-    (let [id (get-in request [:path-params :id])
-          data (:body-params request)
-          updated-menu (crud/update! (daily-menu/model datasource) id data)]
-      (if updated-menu
-        (response/response updated-menu)
-        (response/not-found "Not found")))))
+    (let [{:keys [date dishes]} (:body request)]
+      (if (jt/before? (jt/local-date date) (jt/local-date))
+        (response/bad-request "Menu date cannot be earlier than the current date")
+        (try
+          (with-transaction [tx datasource]
+            (let [menu-id    (get-in request [:params :id])
+                  menu-items (doall
+                              (map
+                               (fn [{:keys [price item-id] dish-id :id :as d} ]
+                                 (let [data (prepare-data {:daily_menu_id (h/as-int menu-id)
+                                                           :dish_id       dish-id
+                                                           :price         price})]
+                                   (prn d)
+                                   (if item-id
+                                     (crud/update! (daily-menu-item/model tx) item-id data)
+                                     (crud/create! (daily-menu-item/model tx) data))))
+                               dishes))]
+              (response/created "" {:menu (crud/read (daily-menu/model tx) menu-id) :menu_items menu-items})))
+          (catch Exception e
+            (response/bad-request {:error (.getMessage e)})))))))
 
 (defn delete-handler [datasource]
   (fn [request]
-    (let [id (get-in request [:path-params :id])
+    (let [id (get-in request [:params :id])
           deleted-menu (crud/delete! (daily-menu/model datasource) id)]
       (if deleted-menu
         (response/response deleted-menu)
@@ -67,7 +80,7 @@
 
 (defn publish-daily-menu [datasource]
   (fn [request]
-    (let [id (get-in request [:path-params :id])
+    (let [id (get-in request [:params :id])
           published-menu (daily-menu/publish-menu datasource id)]
       (if published-menu
         (response/response published-menu)
@@ -75,7 +88,7 @@
 
 (defn unpublish-daily-menu [datasource]
   (fn [request]
-    (let [id (get-in request [:path-params :id])
+    (let [id (get-in request [:params :id])
           unpublished-menu (daily-menu/unpublish-menu datasource id)]
       (if unpublished-menu
         (response/response unpublished-menu)

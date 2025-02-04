@@ -39,8 +39,8 @@
   (read [_ id]
     (crud/read (->AbstractModel :orders Schema datasource) id))
 
-  (list-all [_ query-params]
-    (crud/list-all (->AbstractModel :orders Schema datasource) query-params)))
+  (list-all [_ params]
+    (crud/list-all (->AbstractModel :orders Schema datasource) params)))
 
 (defn model [datasource]
   (->OrderModel datasource))

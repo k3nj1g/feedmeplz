@@ -1,8 +1,9 @@
 (ns app.models.daily-menu
-  (:require [app.helpers :as h]
-            [app.models.crud :as crud :refer [CRUD]]
-            [app.server.db :refer [execute-query]]
-            [app.macro :refer [persist-scope]]))
+  (:require [app.server.db :refer [execute-query]]
+
+            [app.helpers :as h]
+
+            [app.models.crud :as crud :refer [CRUD]]))
 
 (def DailyMenuSchema
   [:map
@@ -12,7 +13,6 @@
 (defrecord DailyMenuModel [table-name schema datasource-or-tx]
   CRUD
   (create! [_ data]
-    (persist-scope)
     (if-let [errors (h/validate-data schema (or data {}))]
       (throw (ex-info "Validation failed" {:errors errors}))
       (let [query {:insert-into table-name
@@ -21,9 +21,22 @@
         (first (execute-query datasource-or-tx query)))))
 
   (read [_ id]
-    (let [query {:select    [:dm.* [:array_agg :dmi.*] :menu_items]
-                 :from      [[table-name :dm]]
-                 :left-join [[:daily_menu_items :dmi] [:= :dm.id :dmi.daily_menu_id]]
+    (let [query {:select   [:dm.*
+                            [[:jsonb_agg
+                              [:||
+                               [:to_jsonb :dmi.*]
+                               [:jsonb_build_object
+                                "name" :d.name
+                                "category_id" :c.id]]] :menu_items]]
+                 :from     [[table-name :dm]]
+                 :join     [[:daily_menu_items :dmi]
+                            [:= :dm.id :dmi.daily_menu_id]
+                 
+                            [:dishes :d]
+                            [:= :d.id :dmi.dish_id]
+                 
+                            [:categories :c]
+                            [:= :d.category_id :c.id]]
                  :where     [:= :dm.id [:cast id :integer]]
                  :group-by  [:dm.id]}]
       (first (execute-query datasource-or-tx query))))
@@ -43,7 +56,7 @@
                  :returning   [:*]}]
       (first (execute-query datasource-or-tx query))))
   
-  (list-all [_ {:keys [date] :as _query-params}]
+  (list-all [_ {:keys [date] :as _params}]
     (let [query (cond-> {:select   [:dm.*
                                     [[:jsonb_agg 
                                       [:||

@@ -4,9 +4,10 @@
             [compojure.core  :refer [routes DELETE GET POST PUT]]
             [compojure.route :refer [not-found]]
 
-            [ring.middleware.cors   :refer [wrap-cors]]
-            [ring.middleware.json   :refer [wrap-json-body wrap-json-response]]
-            [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.cors           :refer [wrap-cors]]
+            [ring.middleware.json           :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.params         :refer [wrap-params]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
 
             [app.handler                     :as handler]
             [app.handlers.crud-handler       :as crud]
@@ -44,11 +45,11 @@
      (DELETE "/dishes/:id" [] (crud/delete-handler dish-model))
 
      ;; Маршруты для ежедневного меню
-     (GET "/daily-menu" [] (daily-menu-handler/list-handler datasource))
-     (GET "/daily-menu/:id" [] (daily-menu-handler/read-handler datasource))
-     (POST "/daily-menu" [] (daily-menu-handler/create-handler datasource))
-     (PUT "/daily-menu/:id" [] (daily-menu-handler/update-handler datasource))
-     (DELETE "/daily-menu/:id" [] (daily-menu-handler/delete-handler datasource))
+     (GET "/daily-menus" [] (daily-menu-handler/list-handler datasource))
+     (GET "/daily-menus/:id" [] (daily-menu-handler/read-handler datasource))
+     (POST "/daily-menus" [] (daily-menu-handler/create-handler datasource))
+     (PUT "/daily-menus/:id" [] (daily-menu-handler/update-handler datasource))
+     (DELETE "/daily-menus/:id" [] (daily-menu-handler/delete-handler datasource))
 
      ;; Маршруты для пользователей
      (GET "/users" [] (crud/list-handler user-model))
@@ -66,7 +67,8 @@
 
      (not-found "Not Found"))))
 
-(defn wrap-exception-handling [handler]
+(defn wrap-exception-handling
+  [handler]
   (fn [request]
     (try
       (handler request)
@@ -80,6 +82,7 @@
   [datasource]
   (-> (create-routes datasource)
       wrap-exception-handling
+      wrap-keyword-params
       wrap-params
       wrap-json-response
       (wrap-json-body {:keywords? true})

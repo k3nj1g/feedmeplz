@@ -40,7 +40,7 @@
                  :returning   [:*]}]
       (first (execute-query datasource-or-tx query))))
 
-  (list-all [_ _query-params]
+  (list-all [_ _params]
     (let [query {:select [:*]
                  :from   [table-name]}]
       (execute-query datasource-or-tx query))))

@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@cspell/dict-clojure": "^2.0.6",
+    "@cspell/dict-ru_ru": "^2.2.4"
+  }
+}

@@ -1,0 +1,23 @@
+{
+    "ignorePaths": [
+      ".gitignore",
+    ],
+    "dictionaryDefinitions": [
+      {
+        "name": "app-specific-dictionary",
+        "path": "./dictionaries/app-specific-dictionary.txt"
+      }
+    ],
+    "dictionaries": [
+      "app-specific-dictionary",
+      "ru-ru",
+      "clojure",
+    ],
+    "import": [
+      "@cspell/dict-ru_ru/cspell-ext.json",
+      "@cspell/dict-clojure/cspell-ext.json"
+    ],
+    "allowCompoundWords": true,
+    "caseSensitive": false
+  }
+  

@@ -43,8 +43,8 @@
     (crud/delete! (->AbstractModel :users Schema datasource) id))
 
 
-  (list-all [_ query-params]
-    (crud/list-all (->AbstractModel :users Schema datasource) query-params)))
+  (list-all [_ params]
+    (crud/list-all (->AbstractModel :users Schema datasource) params)))
 
 (defn model
   [datasource]
