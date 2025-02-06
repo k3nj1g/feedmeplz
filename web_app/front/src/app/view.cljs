@@ -12,7 +12,7 @@
             [app.toast]
             
             [app.home.view]
-            [app.menu.view]
+            [app.current-menu.view]
             [app.admin.view]))
 
 (defn layout-view []

@@ -4,7 +4,7 @@
             [tick.core :as t]
 
             [app.helpers :as h]
-            
+
             [app.admin.daily.crud.form :as form]))
 
 ;;--- Init events ---
@@ -27,12 +27,14 @@
 (reg-event-fx
  :admin-daily-update
  (fn [_ [_ params]]
-   {:http/request [{:method :get
-                    :uri    "/categories"
-                    :pid    ::categories}
-                   {:method :get
-                    :uri    "/dishes"
-                    :pid    ::dishes}
+   {:http/request [{:method  :get
+                    :uri     "/categories"
+                    :pid     ::categories
+                    :success {:event ::init-form}}
+                   {:method  :get
+                    :uri     "/dishes"
+                    :pid     ::dishes
+                    :success {:event ::init-form}}
                    {:method  :get
                     :uri     (str "/daily-menus/" (:id params))
                     :pid     ::daily-menu
@@ -40,20 +42,22 @@
 
 (reg-event-fx
  ::init-form
- (fn [{db :db} [_ daily-menu]]
+ (fn [{db :db} & _]
    (let [categories (get-in db [:http/response ::categories])
          dishes     (get-in db [:http/response ::dishes])
-         init-data  (->> daily-menu :menu_items
-                         (group-by :category_id)
-                         (reduce-kv
-                          (fn [acc k v]
-                            (assoc acc (form/category->path {:id k})
-                                   {:dishes (mapv
-                                             (fn [{dish-id :dish_id id :id}]
-                                               (some #(when (= (:id %) dish-id)
-                                                        (assoc % :item-id id)) dishes)) v)})) {}))]
-     {:dispatch [:zf/init form/form-path (form/form-schema categories)
-                 (merge-with merge {:date (t/date (t/instant (:date daily-menu)))} init-data)]})))
+         daily-menu (get-in db [:http/response ::daily-menu])]
+     (when (and categories dishes daily-menu)
+       (let [init-data (->> daily-menu :menu_items
+                            (group-by :category_id)
+                            (reduce-kv
+                             (fn [acc k v]
+                               (assoc acc (form/category->path {:id k})
+                                      {:dishes (mapv
+                                                (fn [{dish-id :dish_id id :id}]
+                                                  (some #(when (= (:id %) dish-id)
+                                                           (assoc % :item-id id)) dishes)) v)})) {}))]
+         {:dispatch [:zf/init form/form-path (form/form-schema categories)
+                     (merge-with merge {:date (t/date (t/instant (:date daily-menu)))} init-data)]})))))
 ;;------
 
 ;;--- Flow events ---
@@ -95,7 +99,6 @@
  ::check-existing-menu
  (fn [_ [_ {:keys [success data]}]]
    (let [selected-date (get-in data [:form-value :date])]
-     
      {:http/request {:method  :get
                      :uri     "/daily-menus"
                      :params  {:date selected-date}

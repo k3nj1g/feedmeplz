@@ -37,11 +37,12 @@
   (let [date @(subscribe [::model/daily-menu-date])]
     (prn date)
     [:div.flex.justify-between.items-center.mb-6
-     [heading [:div.flex.gap-2
-               "Меню дня"
-               [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.text
-                [:> Calendar {:class "w-4 h-4"}]
-                (date-utils/->ru-verbose (if date (js/Date. date) (js/Date.)))]]]
+     [heading
+      [:div.flex.gap-2
+       "Меню дня"
+       [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.text
+        [:> Calendar {:class "w-4 h-4"}]
+        (date-utils/->ru-verbose (if date (js/Date. date) (js/Date.)))]]]
      [button
       {:type     "primary"
        :on-click #(swap! show-selected not)}
@@ -115,10 +116,11 @@
                        (conj "rotate-180"))}]]]]
          (when (= @active-category category)
            [:div.mt-2.p-4.bg-gray-50.rounded-lg
-            [text-input form/form-path [(form/category->path category) :search]
-             {:adornment [:> Search {:class "w-5 h-5 text-gray-400 mr-2"}]
-              :props     {:full-width  true
-                          :placeholder "Поиск блюд..."}}]
+            [:div.mb-4
+             [text-input form/form-path [(form/category->path category) :search]
+              {:adornment [:> Search {:class "w-5 h-5 text-gray-400 mr-2"}]
+               :props     {:full-width  true
+                           :placeholder "Поиск блюд..."}}]]
             [:div.grid.grid-cols-1.md:grid-cols-2.gap-2
              (let [paginated-items (->> dishes
                                         (drop (* (dec @active-page) items-per-page))

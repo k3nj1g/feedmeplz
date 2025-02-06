@@ -96,7 +96,7 @@
             :type    :error}}))
 
 (reg-fx
- `:http/request
+ :http/request
  (fn [params]
    (dispatch [:http/request params])))
 
@@ -108,3 +108,7 @@
           (assoc-in db path value)
           (assoc db path value))}))
 
+(reg-fx
+ :copy-to-clipboard
+ (fn [text]
+   (.writeText js/navigator.clipboard text)))

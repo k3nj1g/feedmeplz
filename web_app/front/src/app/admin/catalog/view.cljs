@@ -72,7 +72,7 @@
       (if (:id dish) "Редактировать блюдо" "Новое блюдо")]
      [:div]
      [dialog-content
-      [:div.grid.gap-1
+      [:div.grid.gap-4
        [text-input form/form-path [:name] 
         {:adornment "₽"}]
        [text-input form/form-path [:description]]

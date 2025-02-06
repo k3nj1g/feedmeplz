@@ -13,7 +13,7 @@
 (def routes
   "Application routes"
   ["/" {""                  :home
-        "menu"              :menu
+        "current-menu"      :current-menu
         "admin-catalog"     :admin-catalog
         "admin-daily-list"  :admin-daily-list
         "admin-daily-crud/" {""    :admin-daily-create

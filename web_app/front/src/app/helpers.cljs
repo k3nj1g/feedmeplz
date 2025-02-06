@@ -1,6 +1,7 @@
 (ns app.helpers
-  (:require
-   [re-frame.core :as rf]))
+  (:require [clojure.string :as str]
+            
+            [re-frame.core :as rf]))
 
 (def action
   (memoize
@@ -32,3 +33,9 @@
 (defn success-event
   ([success data]
    (assoc-in success [:params :data] data)))
+
+(defn match-search-term?
+  [in search]
+  (every?
+   #(str/includes? (str/lower-case in) %)
+   (some-> search (str/lower-case) (str/split #"\s+"))))

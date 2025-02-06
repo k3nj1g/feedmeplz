@@ -28,8 +28,8 @@
     :content   [:div.py-1
                 [admin-menu-item "Каталог блюд" :admin-catalog]
                 [admin-menu-item "Меню дня" :admin-daily-list]
-                [admin-menu-item "Пользователи" :admin-users]
-                [admin-menu-item "Роли" :admin-roles]]
+                #_[admin-menu-item "Пользователи" :admin-users]
+                #_[admin-menu-item "Роли" :admin-roles]]
     :placement :top}])
 
 (defn nav-button
@@ -49,8 +49,8 @@
    [:div.max-w-6xl.mx-auto.px-4
     [:div.flex.justify-between.h-16
      [:div.flex.space-x-8
-      [nav-button current-page :menu Clock "Меню дня"]
-      [nav-button current-page :orders ShoppingCart "Мои заказы"]
+      [nav-button current-page :current-menu Clock "Меню дня"]
+      #_[nav-button current-page :orders ShoppingCart "Мои заказы"]
       [admin-menu]]
      [:div.flex.items-center
       [:> User {:class ["w-5" "h-5" "text-gray-500"]}]

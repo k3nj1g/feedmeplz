@@ -1,4 +1,5 @@
-(ns app.utils.date)
+(ns app.utils.date
+  (:require-macros [ps]))
 
 (defn ->ru-verbose
   "Форматирует дату в виде строки 'день месяц год' на русском языке.
@@ -8,6 +9,7 @@
   (let [date-obj (if (string? date)
                    (js/Date. date)
                    date)]
+    (ps/persist-scope)
     (.toLocaleDateString date-obj "ru-RU" #js {:day "numeric"
                                                :month "long"
                                                :year "numeric"})))

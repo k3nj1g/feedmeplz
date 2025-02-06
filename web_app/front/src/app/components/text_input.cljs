@@ -29,8 +29,7 @@
                :label       label
                :value       value
                :on-change   #(dispatch [:zf/set-value form-path path (utils/event-value %)])
-               :size        "small"
-               :helper-text " "}
+               :size        "small"}
               props
               (case input-type
                 (:money :number) {:type "number"}

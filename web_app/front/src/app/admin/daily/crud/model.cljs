@@ -1,16 +1,10 @@
 (ns app.admin.daily.crud.model
-  (:require [clojure.string :as str]
-            
-            [re-frame.core :refer [reg-sub subscribe]]
+  (:require [re-frame.core :refer [reg-sub subscribe]]
 
             [app.helpers :as h]
-            
+
             [app.admin.daily.crud.controller :as ctrl]
             [app.admin.daily.crud.form       :as form]))
-
-(defn- match-all-terms?
-  [name search-terms]
-  (every? #(str/includes? (str/lower-case name) %) search-terms))
 
 (reg-sub
  ::categories
@@ -30,12 +24,9 @@
    [(subscribe [:http/response ::ctrl/dishes])
     (subscribe [:zf/get-value form/form-path [(form/category->path category) :search]])])
  (fn [[dishes search] [_ {category-id :id}]]
-   (let [search-terms (some-> search
-                              (str/lower-case)
-                              (str/split #"\s+"))]
-     (cond->> (filter #(= category-id (:category_id %)) dishes)
-       search
-       (filter #(match-all-terms? (:name %) search-terms))))))
+   (cond->> (filter #(= category-id (:category_id %)) dishes)
+     search
+     (filter #(h/match-search-term? (:name %) search)))))
 
 (reg-sub
  ::selected-dishes-by-category
@@ -57,6 +48,6 @@
  ::buttons
  :<- [::selected-items-count]
  :<- [:db/get [:route-params :id]] 
- (fn [selected-items-count id _]
+ (fn [[selected-items-count id] _]
    {:save {:on-click (h/action (if id [::ctrl/update-daily-menu-flow] [::ctrl/create-daily-menu-flow]))
            :disabled (= selected-items-count 0)}}))
