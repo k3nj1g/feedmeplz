@@ -1,4 +1,5 @@
 hikari
 jdbc
+kcals
 pgobject
 pgtype

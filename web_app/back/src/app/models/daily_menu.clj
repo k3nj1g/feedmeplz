@@ -61,9 +61,13 @@
                                     [[:jsonb_agg 
                                       [:||
                                        [:to_jsonb :dmi.*]
+                                       [:to_jsonb :d.*]
                                        [:jsonb_build_object
-                                        "name" :d.name
-                                        "category_id" :c.id]]] :menu_items]]
+                                        "name"        :d.name
+                                        "category_id" :c.id
+                                        "weight"      :d.weight
+                                        "kcals"       :d.kcals
+                                        "description" :d.description]]] :menu_items]]
                          :from     [[table-name :dm]]
                          :join     [[:daily_menu_items :dmi]
                                     [:= :dm.id :dmi.daily_menu_id]

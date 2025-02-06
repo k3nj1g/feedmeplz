@@ -21,7 +21,7 @@
         (response/bad-request "Menu date cannot be earlier than the current date")
         (try
           (with-transaction [tx datasource]
-            (let [menu       (crud/create! (daily-menu/model tx) {:date date})
+            (let [menu       (crud/create! (daily-menu/model tx) {:date (jt/local-date date)})
                   menu-items (doall
                               (map
                                (fn [{:keys [price] dish-id :id}]
