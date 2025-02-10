@@ -21,8 +21,9 @@
 (reg-event-fx
  ::set-active-category
  (fn [{db :db} [_ category]]
-   {:db       (assoc-in db [:page :active-category] category)
-    :dispatch [::get-dishes-by-category (:id category)]}))
+   {:db (assoc-in db [:page :active-category] category)
+    :fx [[:dispatch [:zf/init form/form-path-search form/form-schema-search {}]]
+         [:dispatch [::get-dishes-by-category (:id category)]]]}))
 
 (reg-event-fx
  ::get-dishes-by-category
@@ -34,7 +35,7 @@
 (reg-event-fx
  ::save-dish-flow
  (fn [_ [_ active-category dish]]
-   {:dispatch [:zf/eval-form form/form-path
+   {:dispatch [:zf/eval-form form/form-path-update
                {:data    {:category-id (:id active-category)
                           :dish        dish}
                 :success {:event (if dish ::update-dish ::create-dish)}}]}))
@@ -69,7 +70,7 @@
  ::init-edit-dish
  (fn [_ [_ dish]]
    {:fx [[:dispatch [:open-dialog :edit-dish dish]]
-         [:dispatch [:zf/init form/form-path form/form-schema dish]]]}))
+         [:dispatch [:zf/init form/form-path-update form/form-schema-update dish]]]}))
 
 (reg-event-fx
  ::delete-dish

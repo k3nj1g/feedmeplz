@@ -3,7 +3,8 @@
             
             [app.helpers :as h]
             
-            [app.admin.catalog.controller :as ctrl])
+            [app.admin.catalog.controller :as ctrl]
+            [app.admin.catalog.form       :as form])
   (:require-macros [ps]))
 
 (reg-sub
@@ -23,11 +24,16 @@
 
 (reg-sub
  ::dishes-by-category
- (fn [db _]
-   (->> db :http/response ::ctrl/dishes-by-category
-        (map #(assoc %
-                     :on-edit (h/action [::ctrl/init-edit-dish %])
-                     :on-delete (h/action [:open-dialog :delete-dish %]))))))
+ :<- [:http/response ::ctrl/dishes-by-category]
+ :<- [:zf/get-value form/form-path-search [:search]]
+ (fn [[dishes-by-category search] _]
+   {:no-items? (empty? dishes-by-category)
+    :dishes    (cond->> (map #(assoc %
+                                     :on-edit (h/action [::ctrl/init-edit-dish %])
+                                     :on-delete (h/action [:open-dialog :delete-dish %]))
+                             dishes-by-category)
+                 search
+                 (filter #(h/match-search-term? (:name %) search)))}))
 
 (reg-sub
  ::edit-dish-dialog-data

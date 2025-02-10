@@ -1,5 +1,5 @@
 (ns app.admin.catalog.view
-  (:require ["lucide-react" :refer [Edit Save Trash2 Plus UtensilsCrossed]]
+  (:require ["lucide-react" :refer [Edit Save Trash2 Plus Search UtensilsCrossed]]
             
             [re-frame.core :refer [dispatch subscribe]]
 
@@ -24,7 +24,7 @@
   [button
    {:type     "primary"
     :on-click #(do (dispatch [:open-dialog :edit-dish])
-                   (dispatch [:zf/init form/form-path form/form-schema]))}
+                   (dispatch [:zf/init form/form-path-update form/form-schema-update]))}
    [:> Plus {:class "w-4 h-4 mr-2"}]
    "Добавить блюдо"])
 
@@ -73,14 +73,14 @@
      [:div]
      [dialog-content
       [:div.grid.gap-4
-       [text-input form/form-path [:name] 
+       [text-input form/form-path-update [:name] 
         {:adornment "₽"}]
-       [text-input form/form-path [:description]]
+       [text-input form/form-path-update [:description]]
        [:div.grid.grid-cols-3.gap-4
-        [text-input form/form-path [:price]]
-        [text-input form/form-path [:weight]
+        [text-input form/form-path-update [:price]]
+        [text-input form/form-path-update [:weight]
          {:adornment "г"}]
-        [text-input form/form-path [:kcals]
+        [text-input form/form-path-update [:kcals]
          {:adornment "ккал"}]]]]
 
       [:div
@@ -133,16 +133,24 @@
 
 (defn category-content
   [active-category]
-  (let [dishes @(subscribe [::model/dishes-by-category active-category])]
+  (let [{:keys [dishes no-items?]} 
+        @(subscribe [::model/dishes-by-category active-category])]
     [:div.flex-1.space-y-4
-     (if (empty? dishes)
+     (if no-items?
        [empty-state]
        [:<>
         [:div.flex.justify-between.items-center.mb-4
-         [:h2.text-xl.font-medium (:name active-category)]]
-        (for [dish dishes]
-          ^{:key (:id dish)}
-          [dish-card dish])])]))
+         [:h2.text-xl.font-medium (:name active-category)]
+         [text-input form/form-path-search [:search]
+          {:adornment [:> Search {:class "w-5 h-5 text-gray-400 mr-2"}]
+           :props     {:placeholder "Поиск блюд..."}}]]
+        (if (empty? dishes)
+          [:div.p-8.bg-gray-50.rounded-lg.border-2.border-dashed.border-gray-200
+           [:p.text-sm.text-gray-500.text-center
+            "По вашему запросу ничего не найдено"]]
+          (for [dish dishes]
+            ^{:key (:id dish)}
+            [dish-card dish]))])]))
 
 (defn dish-catalog
   []

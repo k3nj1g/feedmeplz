@@ -1,8 +1,8 @@
 (ns app.admin.catalog.form)
 
-(def form-path [:form :catalog])
+(def form-path-update [:form :catalog :update])
 
-(def form-schema
+(def form-schema-update
   {:type   :form
    :fields {:name        {:type       :string
                           :label      "Название"
@@ -18,3 +18,9 @@
                           :label "Калории"}
             :weight      {:type  :number
                           :label "Вес"}}})
+
+(def form-path-search [:form :current-menu :search])
+
+(def form-schema-search
+  {:type   :form
+   :fields {:search {:type :string}}})
