@@ -5,15 +5,15 @@
                  
                  If given no symbols defs all visible vars."
   ([]
-   (let [syms (cond-> &env
-                (contains? &env :locals)
-                :locals
+   (let [symbols (cond-> &env
+                   (contains? &env :locals)
+                   :locals
 
-                :always
-                keys)]
-     `(persist-scope ~@syms)))
-  ([& syms]
+                   :always
+                   keys)]
+     `(persist-scope ~@symbols)))
+  ([& symbols]
    `(do
-      ~@(map (fn [sym]
-               `(def ~sym ~sym))
-             syms))))
+      ~@(map (fn [symbol]
+               `(def ~symbol ~symbol))
+             symbols))))

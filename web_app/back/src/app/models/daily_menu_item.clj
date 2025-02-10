@@ -49,14 +49,3 @@
 
 (defn model [datasource-or-tx]
   (->DailyMenuItemModel :daily_menu_items DailyMenuItemSchema datasource-or-tx))
-
-(defn add-menu-item [datasource-or-tx daily-menu-id dish-id price]
-  (let [daily-menu-model (model datasource-or-tx)
-        data             {:daily_menu_id daily-menu-id
-                          :dish_id       dish-id
-                          :price         price}]
-    (crud/create! daily-menu-model data)))
-
-(defn remove-menu-item [datasource-or-tx item-id]
-  (let [daily-menu-model (model datasource-or-tx)]
-    (crud/delete! daily-menu-model item-id)))

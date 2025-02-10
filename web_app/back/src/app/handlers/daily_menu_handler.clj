@@ -78,19 +78,3 @@
       (if deleted-menu
         (response/response deleted-menu)
         (response/not-found "Not found")))))
-
-(defn publish-daily-menu [datasource]
-  (fn [request]
-    (let [id (get-in request [:params :id])
-          published-menu (daily-menu/publish-menu datasource id)]
-      (if published-menu
-        (response/response published-menu)
-        (response/not-found "Not found")))))
-
-(defn unpublish-daily-menu [datasource]
-  (fn [request]
-    (let [id (get-in request [:params :id])
-          unpublished-menu (daily-menu/unpublish-menu datasource id)]
-      (if unpublished-menu
-        (response/response unpublished-menu)
-        (response/not-found "Not found")))))

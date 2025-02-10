@@ -1,4 +1,5 @@
-(ns app.models.crud)
+(ns app.models.crud
+  (:refer-clojure :exclude [read]))
 
 (defprotocol CRUD
   (create! [this data])

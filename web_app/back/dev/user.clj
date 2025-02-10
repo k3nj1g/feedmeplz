@@ -1,11 +1,11 @@
 (ns user
   (:require [clojure.tools.namespace.repl :refer [set-refresh-dirs]]
-            
-            [integrant.repl       :refer [clear go halt prep init reset reset-all]]
+
+            [integrant.repl       :refer [go halt reset reset-all]]
             [integrant.repl.state :as ig-state]
-            
-            [app.config :as config]            
-            
+
+            [app.config :as config]
+
             [app.core]
 
             [app.models.crud :as crud]
