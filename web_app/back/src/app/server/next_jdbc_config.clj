@@ -1,6 +1,6 @@
 (ns app.server.next-jdbc-config
   (:require [cheshire.core :as json]
-            [java-time     :as jt]
+            [java-time.api :as jt]
 
             [next.jdbc.prepare    :as prepare]
             [next.jdbc.result-set :as rs])

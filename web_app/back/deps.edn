@@ -31,7 +31,9 @@
            ;; Logs
            org.slf4j/slf4j-simple              {:mvn/version "2.0.13"}}
  :aliases {:dev           {:extra-deps {ring/ring-devel {:mvn/version "1.8.1"}
-                                        ring/ring-mock  {:mvn/version "0.4.0"}}}
+                                        ring/ring-mock  {:mvn/version "0.4.0"}
+                                        kgoh/ps         {:git/url "https://github.com/KGOH/ps"
+                                                         :sha     "9dff56d093a85e0d6fb47a38b685d058df68aeb6"}}}
            :repl/reloaded {:extra-paths ["dev"]
                            :extra-deps  {nrepl/nrepl                 {:mvn/version "1.1.0"}
                                          cider/cider-nrepl           {:mvn/version "0.45.0"}
