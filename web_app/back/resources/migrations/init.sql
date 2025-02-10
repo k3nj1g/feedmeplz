@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS dishes (
     kcals DECIMAL(10, 2),
     weight DECIMAL(10, 2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (name, category_id)
 );
 
 --;;
