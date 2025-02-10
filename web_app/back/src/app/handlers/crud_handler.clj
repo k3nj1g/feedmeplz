@@ -4,10 +4,9 @@
             [app.models.crud :as crud]))
 
 (defn create-handler [model]
-  (fn [request]
+  (fn [{:keys [body-params]}]
     (try
-      (let [data   (:body request)
-            result (crud/create! model data)]
+      (let [result (crud/create! model body-params)]
         (response/created "" result))
       (catch clojure.lang.ExceptionInfo e
         (response/bad-request (:errors (ex-data e)))))))
@@ -21,15 +20,14 @@
         (response/not-found {:error "Not found"})))))
 
 (defn update-handler [model]
-  (fn [request]
-    (let [id (get-in request [:params :id])
-          data (:body request)
-          result (crud/update! model id data)]
+  (fn [{:keys [body-params] :as request}]
+    (let [id     (get-in request [:params :id])
+          result (crud/update! model id body-params)]
       (response/response result))))
 
 (defn delete-handler [model]
   (fn [request]
-    (let [id (get-in request [:params :id])
+    (let [id     (get-in request [:params :id])
           result (crud/delete! model id)]
       (response/response result))))
 

@@ -34,8 +34,8 @@
 
 (defn login-handler
   [datasource]
-  (fn [{body :body-params}]
-    (if-let [user (user-handler/authenticate-user datasource body)]
+  (fn [{:keys [body-params]}]
+    (if-let [user (user-handler/authenticate-user datasource body-params)]
       (let [token (create-token user)]
         (-> (response/response {:token token})
             (response/status 200)))

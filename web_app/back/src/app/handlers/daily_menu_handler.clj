@@ -16,8 +16,8 @@
       (update :price h/as-double)))
 
 (defn create-handler [datasource]
-  (fn [request]
-    (let [{:keys [date dishes] :or {date (jt/local-date)}} (:body request)]
+  (fn [{:keys [body-params]}]
+    (let [{:keys [date dishes] :or {date (jt/local-date)}} body-params]
       (if (jt/before? (jt/local-date date) (jt/local-date))
         (response/bad-request "Menu date cannot be earlier than the current date")
         (try
@@ -49,8 +49,8 @@
       (response/response menus))))
 
 (defn update-handler [datasource]
-  (fn [request]
-    (let [{:keys [date dishes]} (:body request)]
+  (fn [{:keys [body-params] :as request}]
+    (let [{:keys [date dishes]} body-params]
       (if (jt/before? (jt/local-date date) (jt/local-date))
         (response/bad-request "Menu date cannot be earlier than the current date")
         (try
