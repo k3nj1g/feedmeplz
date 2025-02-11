@@ -37,7 +37,7 @@
 
 (defn read-handler [datasource]
   (fn [request]
-    (let [id   (get-in request [:params :id])
+    (let [id   (get-in request [:path-params :id])
           menu (crud/read (daily-menu/model datasource) id)]
       (if menu
         (response/response menu)
@@ -55,7 +55,7 @@
         (response/bad-request "Menu date cannot be earlier than the current date")
         (try
           (with-transaction [tx datasource]
-            (let [menu-id    (get-in request [:params :id])
+            (let [menu-id    (get-in request [:path-params :id])
                   menu-items (doall
                               (map
                                (fn [{:keys [price item-id] dish-id :id :as d} ]
@@ -73,7 +73,7 @@
 
 (defn delete-handler [datasource]
   (fn [request]
-    (let [id (get-in request [:params :id])
+    (let [id (get-in request [:path-params :id])
           deleted-menu (crud/delete! (daily-menu/model datasource) id)]
       (if deleted-menu
         (response/response deleted-menu)

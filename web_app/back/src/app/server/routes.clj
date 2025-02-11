@@ -13,7 +13,8 @@
             [reitit.coercion       :as coercion]
             [reitit.coercion.malli :as coercion-malli]
 
-            [ring.middleware.cors :refer [wrap-cors]]
+            [ring.middleware.cors           :refer  [wrap-cors]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
 
             [malli.util :as mu]
 
@@ -70,7 +71,7 @@
 
      ["/categories"
       {:swagger {:tags ["Categories"]}}
-      ["/"
+      [""
        {:get {:summary "Получение списка всех категорий"
               :handler (crud/list-handler category-model)}}]
       ["/:id"
@@ -82,7 +83,7 @@
 
      ["/dishes"
       {:swagger {:tags ["Dishes"]}}
-      ["/"
+      [""
        {:get {:summary "Получение списка всех блюд"
               :handler (crud/list-handler dish-model)}}]
       ["/:id"
@@ -91,7 +92,7 @@
 
      ["/daily-menus"
       {:swagger {:tags ["Daily menu"]}}
-      ["/"
+      [""
        {:get {:summary "Получение списка ежедневных меню"
               :handler (daily-menu-handler/list-handler datasource)}}]
       ["/:id"
@@ -104,7 +105,7 @@
        :swagger    {:security [{"auth" []}]}}
       ["/categories"
        {:swagger {:tags ["Categories"]}}
-       ["/"
+       [""
         {:post {:summary "Создание новой категории"
                 :handler (crud/create-handler category-model)}}]
        ["/:id"
@@ -115,7 +116,7 @@
 
       ["/dishes"
        {:swagger {:tags ["Dishes"]}}
-       ["/"
+       [""
         {:post {:summary "Создание нового блюда"
                 :handler (crud/create-handler dish-model)}}]
        ["/:id"
@@ -126,7 +127,7 @@
 
       ["/daily-menus"
        {:swagger {:tags ["Daily menu"]}}
-       ["/"
+       [""
         {:post {:summary "Создание нового ежедневного меню"
                 :handler (daily-menu-handler/create-handler datasource)}}]
        ["/:id"
@@ -137,7 +138,7 @@
 
       ["/users"
        {:swagger {:tags ["Users"]}}
-       ["/"
+       [""
         {:get  {:summary "Получение списка пользователей"
                 :handler (crud/list-handler user-model)}
          :post {:summary "Создание нового пользователя"
@@ -152,7 +153,7 @@
 
       ["/orders"
        {:swagger {:tags ["Orders"]}}
-       ["/"
+       [""
         {:get     {:summary "Получение списка заказов"
                    :handler (crud/list-handler order-model)}
          :post    {:summary "Создание нового заказа"
@@ -165,6 +166,14 @@
          :delete {:summary "Удаление заказа"
                   :handler (crud/delete-handler order-model)}}]]]]))
 
+(def parameters-middleware
+  {:name    ::parameters
+   :compile (fn [{:keys [parameters]} _]
+              (if (and (some? (:form parameters)) (nil? (:body parameters)))
+                {:data {:swagger {:consumes ["application/x-www-form-urlencoded"]}}}
+                {}))
+   :wrap    wrap-keyword-params})
+
 (defn create-app [datasource]
   (wrap-cors
    (reitit-ring/ring-handler
@@ -175,6 +184,7 @@
              :muuntaja   m/instance
              :middleware [swagger/swagger-feature
                           parameters/parameters-middleware
+                          parameters-middleware
                           muuntaja/format-middleware
                           exception/exception-middleware
                           ring-coercion/coerce-exceptions-middleware
@@ -183,7 +193,6 @@
              :compile    coercion/compile-request-coercers
              :validate   mu/closed-schema}})
     (reitit-ring/routes
-     (reitit-ring/redirect-trailing-slash-handler)
      (reitit-ring/create-default-handler
       {:not-found (constantly {:status 404, :body "Not Found"})})))
    :access-control-allow-origin  [#"http://localhost:8280"]

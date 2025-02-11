@@ -1,6 +1,6 @@
 (ns app.handlers.crud-handler
   (:require [ring.util.response :as response]
-            
+
             [app.models.crud :as crud]))
 
 (defn create-handler [model]
@@ -13,7 +13,7 @@
 
 (defn read-handler [model]
   (fn [request]
-    (let [id     (get-in request [:params :id])
+    (let [id     (get-in request [:path-params :id])
           result (crud/read model id)]
       (if result
         (response/response result)
@@ -21,13 +21,13 @@
 
 (defn update-handler [model]
   (fn [{:keys [body-params] :as request}]
-    (let [id     (get-in request [:params :id])
+    (let [id     (get-in request [:path-params :id])
           result (crud/update! model id body-params)]
       (response/response result))))
 
 (defn delete-handler [model]
   (fn [request]
-    (let [id     (get-in request [:params :id])
+    (let [id     (get-in request [:path-params :id])
           result (crud/delete! model id)]
       (response/response result))))
 
