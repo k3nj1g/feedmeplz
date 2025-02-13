@@ -5,6 +5,8 @@
 
             [zenform.core]
 
+            [app.auth.events :as auth]
+            
             [app.config :as config]
             [app.events :as events]
             [app.view   :as view]
@@ -23,5 +25,6 @@
 (defn ^:export init []
   (routes/start!)
   (rf/dispatch-sync [::events/initialize-db])
+  (rf/dispatch-sync [::auth/check-auth])
   (dev-setup)
   (mount-root))

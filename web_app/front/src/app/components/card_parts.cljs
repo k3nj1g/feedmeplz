@@ -2,14 +2,19 @@
 
 (defn card
   [& children]
-  (into [:div.bg-card.text-card-foreground.rounded-xl.border.shadow.mb-6] children))
+  (into [:div.bg-white.rounded-xl.border.shadow] children))
 
 (defn card-header
-  [props title]
-  [:div.p-6
-   [:h3.font-semibold.leading-none.tracking-tight
-    props
-    title]])
+  [& children]
+  (into [:div.flex.flex-col.p-6] children))
+
+(defn card-title
+  [& children]
+  (into [:h3.text-2xl.font-semibold.leading-none.tracking-tight] children))
+
+(defn card-description
+  [& children]
+  (into [:p.text-gray-500.text-sm] children))
 
 (defn card-content
   [& children]

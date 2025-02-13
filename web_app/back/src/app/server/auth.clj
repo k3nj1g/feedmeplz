@@ -1,5 +1,7 @@
 (ns app.server.auth
-  (:require [java-time.api      :as jt]
+  (:require [clojure.string :as str]
+            
+            [java-time.api      :as jt]
             [buddy.sign.jwt     :as jwt]
             [ring.util.response :as response]
             
@@ -18,12 +20,15 @@
 
 (defn authenticated?
   [request]
-  (let [token (get-in request [:headers "authorization"])]
-    (try
-      (jwt/unsign token secret)
-      true
-      (catch Exception _
-        false))))
+  (try
+    (let [token (-> request :headers
+                    (get "authorization")
+                    (str/split #"\s")
+                    (last))]
+      (jwt/unsign token secret))
+    true
+    (catch Exception _
+      false)))
 
 (defn wrap-auth [handler]
   (fn [request]
@@ -41,3 +46,18 @@
             (response/status 200)))
       (-> (response/response {:error "Invalid credentials"})
           (response/status 401)))))
+
+#_(defn check-auth-handler [request]
+  (let [token (get-in request [:cookies "auth-token" :value])]
+    (if (auth-service/verify-token token)
+      (response/response {:authenticated true})
+      (-> (response/response {:authenticated false})
+          (response/status 401)))))
+
+#_(defn logout-handler [_]
+  (-> (response/response {:success true})
+      (response/set-cookie "auth-token" ""
+                           {:http-only true
+                            :secure true
+                            :same-site :strict
+                            :max-age 0})))  ; Устанавливаем время жизни в 0 для удаления куки

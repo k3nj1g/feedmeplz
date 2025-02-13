@@ -13,6 +13,7 @@
 (def routes
   "Application routes"
   ["/" {""                  :home
+        "login"             :login
         "current-menu"      :current-menu
         "admin-catalog"     :admin-catalog
         "admin-daily-list"  :admin-daily-list

@@ -100,7 +100,7 @@
               :handler (daily-menu-handler/read-handler datasource)}}]]
 
      ;; Защищенные маршруты
-     ["/protected"
+     ["/api"
       {:middleware [auth/wrap-auth]
        :swagger    {:security [{"auth" []}]}}
       ["/categories"
@@ -175,25 +175,24 @@
    :wrap    wrap-keyword-params})
 
 (defn create-app [datasource]
-  (wrap-cors
-   (reitit-ring/ring-handler
-    (reitit-ring/router
-     (create-routes datasource)
-     {:data {:coercion   coercion-malli/coercion
-             :exception  pretty/exception
-             :muuntaja   m/instance
-             :middleware [swagger/swagger-feature
-                          parameters/parameters-middleware
-                          parameters-middleware
-                          muuntaja/format-middleware
-                          exception/exception-middleware
-                          ring-coercion/coerce-exceptions-middleware
-                          ring-coercion/coerce-request-middleware
-                          ring-coercion/coerce-response-middleware]
-             :compile    coercion/compile-request-coercers
-             :validate   mu/closed-schema}})
-    (reitit-ring/routes
-     (reitit-ring/create-default-handler
-      {:not-found (constantly {:status 404, :body "Not Found"})})))
-   :access-control-allow-origin  [#"http://localhost:8280"]
-   :access-control-allow-methods [:get :post :patch :put :delete]))
+  (-> (reitit-ring/ring-handler
+       (reitit-ring/router
+        (create-routes datasource)
+        {:data {:coercion   coercion-malli/coercion
+                :exception  pretty/exception
+                :muuntaja   m/instance
+                :middleware [swagger/swagger-feature
+                             parameters/parameters-middleware
+                             parameters-middleware
+                             muuntaja/format-middleware
+                             exception/exception-middleware
+                             ring-coercion/coerce-exceptions-middleware
+                             ring-coercion/coerce-request-middleware
+                             ring-coercion/coerce-response-middleware]
+                :compile    coercion/compile-request-coercers
+                :validate   mu/closed-schema}})
+       (reitit-ring/routes
+        (reitit-ring/create-default-handler
+         {:not-found (constantly {:status 404, :body "Not Found"})})))
+      (wrap-cors :access-control-allow-origin [#"http://localhost:8280"]
+                 :access-control-allow-methods [:get :post :patch :put :delete])))

@@ -116,7 +116,7 @@
  ::create-daily-menu
  (fn [_ [_ {:keys [success data]}]]
    {:http/request {:method  :post
-                   :uri     "/daily-menus"
+                   :uri     "/api/daily-menus"
                    :body    {:date   (get-in data [:form-value :date])
                              :dishes (->> data :form-value
                                           (vals)
@@ -128,7 +128,7 @@
  ::update-daily-menu
  (fn [{db :db} [_ {:keys [success data]}]]
    {:http/request {:method  :put
-                   :uri     (str "/daily-menus/" (get-in db [:route-params :id]))
+                   :uri     (str "/api/daily-menus/" (get-in db [:route-params :id]))
                    :body    {:date   (get-in data [:form-value :date])
                              :dishes (->> data :form-value
                                           (vals)
