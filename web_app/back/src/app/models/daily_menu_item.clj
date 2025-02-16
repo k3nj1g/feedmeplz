@@ -43,8 +43,11 @@
       (first (execute-query datasource-or-tx query))))
 
   (list-all [_ _params]
-    (let [query {:select [:*]
-                 :from   [table-name]}]
+    (let [query {:select   [:*]
+                 :from     [[table-name :dmi]]
+                 :join     [[:dishes :d]
+                            [:= :d.id :dmi.dish_id]]
+                 :order-by [[:d.name :asc]]}]
       (execute-query datasource-or-tx query))))
 
 (defn model [datasource-or-tx]

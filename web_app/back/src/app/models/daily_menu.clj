@@ -80,6 +80,7 @@
                          :where    (cond-> [:and true]
                                      date
                                      (conj [:= :date [:cast date :date]]))
+                         :order-by [[:date :desc]]
                          :group-by [:dm.id]})]
       (->> (execute-query datasource-or-tx query)
            (mapv (fn [row]

@@ -46,7 +46,7 @@
 
 
   (list-all [_ params]
-    (crud/list-all (->AbstractModel :users Schema datasource) params)))
+    (crud/list-all (->AbstractModel :users Schema datasource) (assoc params :order-by "username"))))
 
 (defn model
   [datasource]

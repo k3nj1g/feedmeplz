@@ -33,7 +33,7 @@
     (crud/read (->AbstractModel :dishes Schema datasource) id))
 
   (list-all [_ params]
-    (crud/list-all (->AbstractModel :dishes Schema datasource) params)))
+    (crud/list-all (->AbstractModel :dishes Schema datasource) (assoc params :order-by "name"))))
 
 (defn model [datasource]
   (->DishModel datasource))

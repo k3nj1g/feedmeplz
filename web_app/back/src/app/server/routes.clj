@@ -56,48 +56,49 @@
              :handler (fn [_] {:status 200
                                :body   "ok"})}}]
 
-     ["/auth"
-      {:swagger {:tags ["Auth"]}}
-      ["/token"
-       {:post {:summary    "Получение токена авторизации"
-               :parameters {:body [:map
-                                   [:username string?]
-                                   [:password string?]]}
-               :responses  {200 {:body [:map
-                                        [:token string?]]}
-                            401 {:body [:map
-                                        [:error string?]]}}
-               :handler    (auth/login-handler datasource)}}]]
+     ["/api/public"
+      ["/auth"
+       {:swagger {:tags ["Auth"]}}
+       ["/token"
+        {:post {:summary    "Получение токена авторизации"
+                :parameters {:body [:map
+                                    [:username string?]
+                                    [:password string?]]}
+                :responses  {200 {:body [:map
+                                         [:token string?]]}
+                             401 {:body [:map
+                                         [:error string?]]}}
+                :handler    (auth/login-handler datasource)}}]]
 
-     ["/categories"
-      {:swagger {:tags ["Categories"]}}
-      [""
-       {:get {:summary "Получение списка всех категорий"
-              :handler (crud/list-handler category-model)}}]
-      ["/:id"
-       {:get {:summary "Получение категории по ID"
-              :handler (crud/read-handler category-model)}}]
-      ["/:category_id/dishes"
-       {:get {:summary "Получение блюд по категории"
-              :handler (category-handler/dishes-by-category datasource)}}]]
+      ["/categories"
+       {:swagger {:tags ["Categories"]}}
+       [""
+        {:get {:summary "Получение списка всех категорий"
+               :handler (crud/list-handler category-model)}}]
+       ["/:id"
+        {:get {:summary "Получение категории по ID"
+               :handler (crud/read-handler category-model)}}]
+       ["/:category_id/dishes"
+        {:get {:summary "Получение блюд по категории"
+               :handler (category-handler/dishes-by-category datasource)}}]]
 
-     ["/dishes"
-      {:swagger {:tags ["Dishes"]}}
-      [""
-       {:get {:summary "Получение списка всех блюд"
-              :handler (crud/list-handler dish-model)}}]
-      ["/:id"
-       {:get {:summary "Получение блюда по ID"
-              :handler (crud/read-handler dish-model)}}]]
+      ["/dishes"
+       {:swagger {:tags ["Dishes"]}}
+       [""
+        {:get {:summary "Получение списка всех блюд"
+               :handler (crud/list-handler dish-model)}}]
+       ["/:id"
+        {:get {:summary "Получение блюда по ID"
+               :handler (crud/read-handler dish-model)}}]]
 
-     ["/daily-menus"
-      {:swagger {:tags ["Daily menu"]}}
-      [""
-       {:get {:summary "Получение списка ежедневных меню"
-              :handler (daily-menu-handler/list-handler datasource)}}]
-      ["/:id"
-       {:get {:summary "Получение ежедневного меню по ID"
-              :handler (daily-menu-handler/read-handler datasource)}}]]
+      ["/daily-menus"
+       {:swagger {:tags ["Daily menu"]}}
+       [""
+        {:get {:summary "Получение списка ежедневных меню"
+               :handler (daily-menu-handler/list-handler datasource)}}]
+       ["/:id"
+        {:get {:summary "Получение ежедневного меню по ID"
+               :handler (daily-menu-handler/read-handler datasource)}}]]]
 
      ;; Защищенные маршруты
      ["/api"
