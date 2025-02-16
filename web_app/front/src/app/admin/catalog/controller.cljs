@@ -8,7 +8,7 @@
  :admin-catalog
  (fn [& _]
    {:http/request {:method  :get
-                   :uri     "/categories"
+                   :uri     "/api/public/categories"
                    :pid     ::categories
                    :success {:event ::init-active-category}}}))
 
@@ -28,7 +28,7 @@
  ::get-dishes-by-category
  (fn [_ [_ category_id]]
    {:http/request {:method :get
-                   :uri    (str "/categories/" category_id "/dishes")
+                   :uri    (str "/api/public/categories/" category_id "/dishes")
                    :pid    ::dishes-by-category}}))
 
 (reg-event-fx

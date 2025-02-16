@@ -13,10 +13,10 @@
  :current-menu
  (fn [& _]
    {:http/request [{:method :get
-                    :uri    "/categories"
+                    :uri    "/api/public/categories"
                     :pid    ::categories}
                    {:method :get
-                    :uri    "/daily-menus"
+                    :uri    "/api/public/daily-menus"
                     :params {:date (t/today)}
                     :pid    ::daily-menus}]
     :dispatch     [:zf/init form/form-path form/form-schema]}))

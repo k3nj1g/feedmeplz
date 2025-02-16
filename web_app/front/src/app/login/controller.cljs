@@ -20,7 +20,7 @@
  ::request-auth-token
  (fn [_ [_ {:keys [data]}]]
    {:http/request {:method  :post
-                   :uri     "/auth/token"
+                   :uri     "/api/public/auth/token"
                    :body    (:form-value data)
                    :success {:event ::handle-auth-success}}}))
 
