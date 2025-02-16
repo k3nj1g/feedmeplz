@@ -27,6 +27,5 @@
 (reg-event-fx
  ::handle-auth-success
  (fn [_ [_ response]]
-   {:fx [[:dispatch [::auth/set-authenticated true]]
-         [:dispatch [::auth/set-token (:token response)]]
+   {:fx [[:dispatch [::auth/set-token (:token response)]]
          [:dispatch [:navigate :current-menu]]]}))

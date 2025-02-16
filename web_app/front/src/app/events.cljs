@@ -1,5 +1,7 @@
 (ns app.events
-  (:require [ajax.core     :as ajax]
+  (:require [clojure.string :as str]
+            
+            [ajax.core     :as ajax]
             [re-frame.core :refer [dispatch reg-cofx reg-event-fx reg-event-db reg-fx]]
             [day8.re-frame.http-fx]
 
@@ -20,8 +22,16 @@
 (reg-event-fx
  ::set-active-page
  (fn [{:keys [db]} [_ {:keys [page route-params]}]]
-   {:db       (assoc db :active-page page)
-    :dispatch [page route-params]}))
+   (println (-> db :auth :authenticated?) page)
+   (if (-> db :auth :authenticated?)
+     (if (= page :login)
+       {:navigate [:current-menu]}
+       {:db       (assoc db :active-page page)
+        :dispatch [page route-params]})
+     (if (str/includes? (name page) "admin")
+       {:navigate [:login]}
+       {:db       (assoc db :active-page page)
+        :dispatch [page route-params]}))))
 
 (reg-event-db
  :toggle-popup-menu

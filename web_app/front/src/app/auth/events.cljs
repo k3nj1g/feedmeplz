@@ -1,17 +1,14 @@
 (ns app.auth.events
-  (:require [re-frame.core :refer [inject-cofx reg-event-db reg-event-fx reg-fx]]))
+  (:require [re-frame.core :refer [inject-cofx reg-event-fx reg-fx]]))
 
 (def auth-token-key "auth-token")
-
-(reg-event-db
- ::set-authenticated
- (fn [db [_ authenticated?]]
-   (assoc-in db [:auth :authenticated?] authenticated?)))
 
 (reg-event-fx
  ::set-token
  (fn [{:keys [db]} [_ token]]
-   {:db       (assoc-in db [:auth :token] token)
+   {:db       (-> db
+                  (assoc-in [:auth :token] token)
+                  (assoc-in [:auth :authenticated?] true))
     :dispatch [::store-token token]}))
 
 (reg-event-fx
@@ -24,9 +21,9 @@
  [(inject-cofx :local-store auth-token-key)]
  (fn [{:keys [db local-store]} _]
    (let [token (get local-store auth-token-key)]
-     (cond-> {:db (assoc-in db [:auth :token] token)}
-       token
-       (assoc :dispatch [::set-authenticated true])))))
+     {:db (cond-> (assoc-in db [:auth :token] token)
+            token
+            (assoc-in [:auth :authenticated?] true))})))
 
 (reg-event-fx
  ::logout
@@ -46,8 +43,3 @@
  ::remove-token
  (fn []
    (.removeItem js/localStorage auth-token-key)))
-
-(reg-event-fx
- ::check-auth
- (fn [_ _]
-   {:dispatch [::load-token]}))

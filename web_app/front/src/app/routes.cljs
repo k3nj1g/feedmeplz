@@ -12,13 +12,12 @@
 ;; Route definitions
 (def routes
   "Application routes"
-  ["/" {""                  :home
-        "login"             :login
-        "current-menu"      :current-menu
-        "admin-catalog"     :admin-catalog
-        "admin-daily-list"  :admin-daily-list
-        "admin-daily-crud/" {""    :admin-daily-create
-                             [:id] :admin-daily-update}}])
+  ["/" {""       :current-menu
+        "login"  :login
+        "admin/" {"catalog"     :admin-catalog
+                  "daily-list"  :admin-daily-list
+                  "daily-crud/" {""    :admin-daily-create
+                                 [:id] :admin-daily-update}}}])
 
 ;; URL parsing and generation
 (defn parse-url
