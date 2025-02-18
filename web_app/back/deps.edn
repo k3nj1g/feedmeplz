@@ -1,21 +1,25 @@
 {:paths   ["src" "resources"]
  :deps    {org.clojure/clojure                 {:mvn/version "1.11.1"}
 
-           lynxeyes/dotenv                     {:mvn/version "1.1.0"}
            buddy/buddy-hashers                 {:mvn/version "1.8.158"}
+           buddy/buddy-sign                    {:mvn/version "3.4.1"}
            clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
+           lynxeyes/dotenv                     {:mvn/version "1.1.0"}
+           metosin/malli                       {:mvn/version "0.17.0"}
 
            ;; HTTP server & routing
            http-kit/http-kit                   {:mvn/version "2.8.0"}
            ring/ring-json                      {:mvn/version "0.5.1"}
            ring-cors/ring-cors                 {:mvn/version "0.1.13"}
-           compojure/compojure                 {:mvn/version "1.6.1"}
+           metosin/reitit                      {:mvn/version "0.8.0-alpha1"}
+           metosin/reitit-swagger              {:mvn/version "0.8.0-alpha1"}
+           metosin/reitit-swagger-ui           {:mvn/version "0.8.0-alpha1"}
+           metosin/reitit-malli                {:mvn/version "0.8.0-alpha1"}
 
            ;; Database
            com.github.seancorfield/next.jdbc   {:mvn/version "1.3.981"}
            com.github.seancorfield/honeysql    {:mvn/version "2.6.1243"}
            migratus/migratus                   {:mvn/version "1.6.3"}
-           metosin/malli                       {:mvn/version "0.17.0"}
            hikari-cp/hikari-cp                 {:mvn/version "3.2.0"}
            org.postgresql/postgresql           {:mvn/version "42.7.4"}
 
@@ -27,7 +31,9 @@
            ;; Logs
            org.slf4j/slf4j-simple              {:mvn/version "2.0.13"}}
  :aliases {:dev           {:extra-deps {ring/ring-devel {:mvn/version "1.8.1"}
-                                        ring/ring-mock  {:mvn/version "0.4.0"}}}
+                                        ring/ring-mock  {:mvn/version "0.4.0"}
+                                        kgoh/ps         {:git/url "https://github.com/KGOH/ps"
+                                                         :sha     "9dff56d093a85e0d6fb47a38b685d058df68aeb6"}}}
            :repl/reloaded {:extra-paths ["dev"]
                            :extra-deps  {nrepl/nrepl                 {:mvn/version "1.1.0"}
                                          cider/cider-nrepl           {:mvn/version "0.45.0"}

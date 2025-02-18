@@ -45,13 +45,15 @@
 
 (defn navigation
   [current-page]
-  [:nav.bg-white.shadow-sm
-   [:div.max-w-6xl.mx-auto.px-4
-    [:div.flex.justify-between.h-16
-     [:div.flex.space-x-8
-      [nav-button current-page :current-menu Clock "Меню дня"]
-      #_[nav-button current-page :orders ShoppingCart "Мои заказы"]
-      [admin-menu]]
-     [:div.flex.items-center
-      [:> User {:class ["w-5" "h-5" "text-gray-500"]}]
-      [:span.ml-2.text-gray-700 "Иван Петров"]]]]])
+  (let [authenticated? @(rf/subscribe [:db/get [:auth :authenticated?]])]
+    [:nav.bg-white.shadow-sm
+     [:div.max-w-6xl.mx-auto.px-4
+      [:div.flex.justify-between.h-16
+       [:div.flex.space-x-8
+        [nav-button current-page :current-menu Clock "Меню дня"]
+        #_[nav-button current-page :orders ShoppingCart "Мои заказы"]
+        (when authenticated?
+          [admin-menu])]
+       [:div.flex.items-center
+        [:> User {:class ["w-5" "h-5" "text-gray-500"]}]
+        [:span.ml-2.text-gray-700 "Иван Петров"]]]]]))

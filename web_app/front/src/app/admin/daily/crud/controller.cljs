@@ -12,11 +12,11 @@
  :admin-daily-create
  (fn [& _]
    {:http/request [{:method :get
-                    :uri    "/categories"
+                    :uri    "/api/public/categories"
                     :pid    ::categories
                     :success {:event ::init-blank-form}}
                    {:method :get
-                    :uri    "/dishes"
+                    :uri    "/api/public/dishes"
                     :pid    ::dishes}]}))
 
 (reg-event-fx
@@ -28,11 +28,11 @@
  :admin-daily-update
  (fn [_ [_ params]]
    {:http/request [{:method  :get
-                    :uri     "/categories"
+                    :uri     "/api/public/categories"
                     :pid     ::categories
                     :success {:event ::init-form}}
                    {:method  :get
-                    :uri     "/dishes"
+                    :uri     "/api/public/dishes"
                     :pid     ::dishes
                     :success {:event ::init-form}}
                    {:method  :get
@@ -100,7 +100,7 @@
  (fn [_ [_ {:keys [success data]}]]
    (let [selected-date (get-in data [:form-value :date])]
      {:http/request {:method  :get
-                     :uri     "/daily-menus"
+                     :uri     "/api/public/daily-menus"
                      :params  {:date selected-date}
                      :success (h/success-event success data)}})))
 
@@ -116,7 +116,7 @@
  ::create-daily-menu
  (fn [_ [_ {:keys [success data]}]]
    {:http/request {:method  :post
-                   :uri     "/daily-menus"
+                   :uri     "/api/daily-menus"
                    :body    {:date   (get-in data [:form-value :date])
                              :dishes (->> data :form-value
                                           (vals)
@@ -128,7 +128,7 @@
  ::update-daily-menu
  (fn [{db :db} [_ {:keys [success data]}]]
    {:http/request {:method  :put
-                   :uri     (str "/daily-menus/" (get-in db [:route-params :id]))
+                   :uri     (str "/api/daily-menus/" (get-in db [:route-params :id]))
                    :body    {:date   (get-in data [:form-value :date])
                              :dishes (->> data :form-value
                                           (vals)

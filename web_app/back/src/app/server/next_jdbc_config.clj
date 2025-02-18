@@ -1,6 +1,6 @@
 (ns app.server.next-jdbc-config
   (:require [cheshire.core :as json]
-            [java-time :as jt]
+            [java-time.api :as jt]
 
             [next.jdbc.prepare    :as prepare]
             [next.jdbc.result-set :as rs])
@@ -52,9 +52,9 @@
 
   Timestamp
   (read-column-by-label [^Timestamp v _]
-    (-> v (java-time/instant) (str)))
+    (-> v (jt/instant) (str)))
   (read-column-by-index [^Timestamp v _2 _3]
-    (-> v (java-time/instant) (str)))
+    (-> v (jt/instant) (str)))
 
   PgArray
   (read-column-by-index [val _meta _idx] (vec (.getArray val))))

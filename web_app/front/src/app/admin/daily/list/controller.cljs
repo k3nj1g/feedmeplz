@@ -5,8 +5,8 @@
  :admin-daily-list
  (fn [& _]
    {:http/request [{:method :get
-                    :uri    "/categories"
+                    :uri    "/api/public/categories"
                     :pid    ::categories}
                    {:method :get
-                    :uri    "/daily-menus"
+                    :uri    "/api/public/daily-menus"
                     :pid    ::daily-menus}]}))

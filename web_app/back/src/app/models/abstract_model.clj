@@ -36,7 +36,9 @@
                  :returning   [:*]}]
       (first (execute-query datasource query))))
 
-  (list-all [_ _query_params]
-    (let [query {:select [:*]
-                 :from   [table-name]}]
+  (list-all [_ {:keys [order-by] :as _query-params}]
+    (let [query (cond-> {:select [:*]
+                         :from   [table-name]}
+                  order-by
+                  (assoc :order-by [(keyword order-by)]))]
       (execute-query datasource query))))

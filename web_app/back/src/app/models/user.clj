@@ -10,7 +10,9 @@
    [:email [:string {:min 5, :max 255}]]
    [:telegram_id :string]
    [:password_hash :string]
-   [:is_active {:optional true} :boolean]])
+   [:is_active {:optional true} :boolean]
+   [:is_staff {:optional true} :boolean]
+   [:is_admin {:optional true} :boolean]])
 
 (defn- hash-password
   [user]
@@ -35,8 +37,8 @@
 
   (update! [_ id data]
     (-> data
-        hash-password
-        remove-password
+        (hash-password)
+        (remove-password)
         (crud/update! (->AbstractModel :users Schema datasource) id)))
 
   (delete! [_ id]
@@ -44,7 +46,7 @@
 
 
   (list-all [_ params]
-    (crud/list-all (->AbstractModel :users Schema datasource) params)))
+    (crud/list-all (->AbstractModel :users Schema datasource) (assoc params :order-by "username"))))
 
 (defn model
   [datasource]

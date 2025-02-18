@@ -32,7 +32,7 @@
   []
   [:div.flex.flex-col.items-center.justify-center.p-8.bg-gray-50.rounded-lg.border-2.border-dashed.border-gray-200
    [:> Utensils {:class "w-12 h-12 text-gray-400 mb-4"}]
-   [:h3.text-lg.font-medium.text-gray-900.mb-1 "В этой категории пока нет блюд"]
+   [:h3.text-lg.font-medium.text-gray-900.mb-1 "Меню пока не добавлено"]
    [:p.text-sm.text-gray-500.mb-4.text-center
     "Добавьте новые блюда, нажав на кнопку \"Создать меню\" вверху страницы"]])    
 

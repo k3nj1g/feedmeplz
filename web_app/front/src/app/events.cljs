@@ -1,6 +1,8 @@
 (ns app.events
-  (:require [ajax.core     :as ajax]
-            [re-frame.core :refer [dispatch reg-event-fx reg-event-db reg-fx]]
+  (:require [clojure.string :as str]
+            
+            [ajax.core     :as ajax]
+            [re-frame.core :refer [dispatch reg-cofx reg-event-fx reg-event-db reg-fx]]
             [day8.re-frame.http-fx]
 
             [app.db :as db]))
@@ -20,8 +22,16 @@
 (reg-event-fx
  ::set-active-page
  (fn [{:keys [db]} [_ {:keys [page route-params]}]]
-   {:db       (assoc db :active-page page)
-    :dispatch [page route-params]}))
+   (println (-> db :auth :authenticated?) page)
+   (if (-> db :auth :authenticated?)
+     (if (= page :login)
+       {:navigate [:current-menu]}
+       {:db       (assoc db :active-page page)
+        :dispatch [page route-params]})
+     (if (str/includes? (name page) "admin")
+       {:navigate [:login]}
+       {:db       (assoc db :active-page page)
+        :dispatch [page route-params]}))))
 
 (reg-event-db
  :toggle-popup-menu
@@ -59,19 +69,24 @@
 
 (defn make-xhrio-request
   [db request]
-  (cond-> (-> request
-              (update :uri (partial str (get-in db [:config :api-url])))
-              (merge {:timeout         8000
-                      :response-format (ajax/json-response-format {:keywords? true})
-                      :on-success      [:success-http-result request]
-                      :on-failure      [:bad-http-result]}))
-    (#{:post :put :patch} (:method request))
-    (-> (dissoc :body)
-        (assoc :params (:body request)
-               :format (ajax/json-request-format)))
-  
-    (= :delete (:method request))
-    (assoc :format (ajax/url-request-format))))
+  (let [token (get-in db [:auth :token])]
+    (cond-> (-> request
+                (update :uri (partial str (get-in db [:config :api-url])))
+                (merge {:timeout         8000
+                        :response-format (ajax/json-response-format {:keywords? true})
+                        :on-success      [:success-http-result request]
+                        :on-failure      [:bad-http-result]}))
+
+      token
+      (assoc-in [:headers "Authorization"] (str "Bearer " token))
+
+      (#{:post :put :patch} (:method request))
+      (-> (dissoc :body)
+          (assoc :params (:body request)
+                 :format (ajax/json-request-format)))
+
+      (= :delete (:method request))
+      (assoc :format (ajax/url-request-format)))))
 
 (reg-event-fx
  :http/request
@@ -112,3 +127,8 @@
  :copy-to-clipboard
  (fn [text]
    (.writeText js/navigator.clipboard text)))
+
+(reg-cofx
+ :local-store
+ (fn [coeffects local-store-key]
+   (assoc-in coeffects [:local-store local-store-key] (js->clj (.getItem js/localStorage local-store-key)))))

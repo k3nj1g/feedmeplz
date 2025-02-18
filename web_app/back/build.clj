@@ -5,15 +5,17 @@
   (:require [org.corfield.build :as bb]))
 
 (def lib 'feed-me-plz/back)
-(def version "0.1.0-SNAPSHOT")
+(def version "0.1.0")
 (def main 'app.core)
 
-(defn test "Run the tests." [opts]
-  (bb/run-tests opts))
+(defn write-version [opts]
+  (spit "resources/version.txt" version)
+  opts)
 
-(defn ci "Run the CI pipeline of tests (and build the uberjar)." [opts]
+(defn release
+  [opts]
   (-> opts
       (assoc :lib lib :version version :main main)
-      (bb/run-tests)
+      (write-version)
       (bb/clean)
       (bb/uber)))

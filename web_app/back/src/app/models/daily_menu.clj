@@ -80,6 +80,7 @@
                          :where    (cond-> [:and true]
                                      date
                                      (conj [:= :date [:cast date :date]]))
+                         :order-by [[:date :desc]]
                          :group-by [:dm.id]})]
       (->> (execute-query datasource-or-tx query)
            (mapv (fn [row]
@@ -88,15 +89,3 @@
 
 (defn model [datasource]
   (->DailyMenuModel :daily_menus DailyMenuSchema datasource))
-
-(defn publish-menu [datasource menu-id]
-  (let [model (model datasource)
-        data {:is_published true
-              :published_at (java.time.LocalDateTime/now)}]
-    (crud/update! model menu-id data)))
-
-(defn unpublish-menu [datasource menu-id]
-  (let [model (model datasource)
-        data {:is_published false
-              :published_at nil}]
-    (crud/update! model menu-id data)))

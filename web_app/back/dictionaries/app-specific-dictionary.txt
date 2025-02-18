@@ -1,5 +1,8 @@
 hikari
 jdbc
 kcals
+kondo
+malli
+muuntaja
 pgobject
 pgtype

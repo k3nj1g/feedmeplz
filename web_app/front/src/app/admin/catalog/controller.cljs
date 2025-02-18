@@ -8,7 +8,7 @@
  :admin-catalog
  (fn [& _]
    {:http/request {:method  :get
-                   :uri     "/categories"
+                   :uri     "/api/public/categories"
                    :pid     ::categories
                    :success {:event ::init-active-category}}}))
 
@@ -29,7 +29,7 @@
  ::get-dishes-by-category
  (fn [_ [_ category_id]]
    {:http/request {:method :get
-                   :uri    (str "/categories/" category_id "/dishes")
+                   :uri    (str "/api/public/categories/" category_id "/dishes")
                    :pid    ::dishes-by-category}}))
 
 (reg-event-fx
@@ -44,7 +44,7 @@
  ::create-dish
  (fn [_ [_ {:keys [data]}]]
    {:http/request {:method  :post
-                   :uri     "/dishes"
+                   :uri     "/api/dishes"
                    :body    (assoc (:form-value data) :category_id (:category-id data))
                    :success {:event  ::save-success
                              :params data}}}))
@@ -53,7 +53,7 @@
  ::update-dish
  (fn [_ [_ {:keys [data]}]]
    {:http/request {:method  :put
-                   :uri     (str "/dishes/" (:id (:dish data)))
+                   :uri     (str "/api/dishes/" (:id (:dish data)))
                    :body    (:form-value data)
                    :success {:event  ::save-success
                              :params data}}}))
@@ -76,7 +76,7 @@
  ::delete-dish
  (fn [_ [_ dish]]
    {:http/request {:method  :delete
-                   :uri     (str "/dishes/" (:id dish))
+                   :uri     (str "/api/dishes/" (:id dish))
                    :success {:event ::delete-success}}}))
 
 (reg-event-fx

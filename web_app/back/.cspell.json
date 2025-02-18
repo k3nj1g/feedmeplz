@@ -1,6 +1,7 @@
 {
     "ignorePaths": [
-      ".gitignore",
+      ".*",
+      "deps.edn"
     ],
     "dictionaryDefinitions": [
       {
