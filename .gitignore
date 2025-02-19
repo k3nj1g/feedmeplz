@@ -179,3 +179,4 @@ poetry.toml
 web_app/front/resources/public/js
 web_app/back/.calva/repl.calva-repl
 **/node_modules/
+web_app/.portal/vs-code.edn
