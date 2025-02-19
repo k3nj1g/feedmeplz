@@ -43,6 +43,11 @@
     "css-prefix": "postcss --replace resources/public/assets/css/styles.css --use autoprefixer --map",
     "css": "npm-run-all css-compile css-prefix",
     "tailwind:watch": "tailwindcss -i ./resources/public/css/styles.css -o ./resources/public/css/main.css --watch",
-    "dev": "run-p -l shadow:watch tailwind:watch"
+    "dev": "run-p -l shadow:watch tailwind:watch",
+    "build": "npm-run-all build:clean build:shadow build:css",
+    "build:clean": "rm -rf resources/public/js resources/public/css",
+    "build:shadow": "shadow-cljs release app",
+    "build:css": "npm-run-all css-compile css-prefix",
+    "build:tailwind": "tailwindcss -i ./resources/public/css/styles.css -o ./resources/public/css/main.css --minify"
   }
 }
