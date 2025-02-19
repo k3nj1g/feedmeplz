@@ -19,7 +19,9 @@
       (aero/read-config)))
 
 (defn prep
-  []
-  (let [config (read-config)]
-    (ig/load-namespaces config)
-    config))
+  ([]
+   (let [config (read-config)]
+     (ig/load-namespaces config)
+     config))
+  ([exclude-keys]
+   (apply dissoc (prep) exclude-keys)))
