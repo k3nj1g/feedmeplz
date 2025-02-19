@@ -15,31 +15,47 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: ${POSTGRES_PORT}
       HTTP_SERVER_PORT: ${HTTP_SERVER_PORT}
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
 
-  frontend:
+  cli:
     build:
-      context: ./front
+      context: ./back
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
+      target: cli
     environment:
-      - API_URL=http://backend:${HTTP_SERVER_PORT}
-
-  db:
-    image: postgres:16.6
-    environment:
+      POSTGRES_HOST: db
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    restart: always
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    # depends_on:
+    #   - db
+    profiles:
+      - cli      
+
+  # frontend:
+  #   build:
+  #     context: ./front
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     - API_URL=http://backend:${HTTP_SERVER_PORT}
+
+  # db:
+  #   image: postgres:16.6
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   restart: always
 
 volumes:
   postgres-data:

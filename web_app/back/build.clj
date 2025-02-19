@@ -19,3 +19,11 @@
       (write-version)
       (bb/clean)
       (bb/uber)))
+
+(defn cli
+  [opts]
+  (-> opts
+      (assoc :lib lib :version "cli" :main 'app.cli)
+      (write-version)
+      (bb/clean)
+      (bb/uber)))

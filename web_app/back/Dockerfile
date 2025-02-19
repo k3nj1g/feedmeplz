@@ -2,7 +2,8 @@
 FROM clojure:temurin-23-tools-deps-1.12.0.1501-alpine AS build
 
 # Устанавливаем rlwrap
-RUN apk add --no-cache rlwrap
+RUN apk add --no-cache rlwrap git
+
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -15,6 +16,7 @@ COPY build.clj .
 
 # Собираем проект
 RUN clj -T:build release
+RUN clj -T:build cli
 
 # Второй этап: создаем минимальный образ для запуска
 FROM alpine/java:22-jre
@@ -23,6 +25,7 @@ WORKDIR /app
 
 # Копируем собранный jar из предыдущего этапа
 COPY --from=build /app/target/back-0.1.0.jar ./app.jar
+COPY --from=build /app/target/back-cli.jar ./cli.jar
 
 # Копируем файл с версией
 COPY --from=build /app/resources/version.txt ./resources/version.txt
