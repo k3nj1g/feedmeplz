@@ -8,7 +8,7 @@
   (:gen-class))
 
 (defn create-admin [username email password]
-  (let [system     (ig/init (config/prep #{:http/server}))
+  (let [system     (ig/init (config/prep))
         datasource (:persistent/database system)
         user-model (user-model/model datasource)
         data       {:username    username
