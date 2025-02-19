@@ -15,4 +15,4 @@ dev:
 	clj -M:dev:repl/reloaded
 
 psql:
-	docker exec -it postgresdb-db-1 psql -U $(POSTGRES_USER) $(POSTGRES_DB)
+	docker-compose exec -e PGPASSWORD=${POSTGRES_PASSWORD} db psql -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB}
