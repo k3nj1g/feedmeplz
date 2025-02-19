@@ -1,6 +1,9 @@
 # Используем официальный образ Clojure
 FROM clojure:temurin-23-tools-deps-1.12.0.1501-alpine AS build
 
+# Устанавливаем rlwrap
+RUN apk add --no-cache rlwrap
+
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
