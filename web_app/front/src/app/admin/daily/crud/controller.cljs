@@ -36,7 +36,7 @@
                     :pid     ::dishes
                     :success {:event ::init-form}}
                    {:method  :get
-                    :uri     (str "/daily-menus/" (:id params))
+                    :uri     (str "/api/public/daily-menus/" (:id params))
                     :pid     ::daily-menu
                     :success {:event ::init-form}}]}))
 
