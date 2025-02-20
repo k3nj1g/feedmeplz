@@ -3,7 +3,9 @@
 (def debug?
   ^boolean goog.DEBUG)
 
+(goog-define API_URL "") 
+
 (def config
-  {:api-url goog.API_URL})
+  {:api-url API_URL})
 
 (def api-url (:api-url config))
