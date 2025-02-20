@@ -3,11 +3,11 @@
 
             [re-frame.core :refer [reg-event-db reg-event-fx]]
             [tick.core :as t]
-            [goog.string :as gstr]
             
-            [app.current-menu.form :as form])
-
-  (:require-macros [ps]))
+            [goog.string :as gstr]
+            [goog.string.format]
+            
+            [app.current-menu.form :as form]))
 
 (reg-event-fx
  :current-menu

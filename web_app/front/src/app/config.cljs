@@ -4,6 +4,6 @@
   ^boolean goog.DEBUG)
 
 (def config
-  {:api-url goog.API_URL})
+  {:api-url (or goog.API_URL "http://localhost:8090")})
 
 (def api-url (:api-url config))
