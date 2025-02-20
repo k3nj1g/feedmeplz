@@ -1,5 +1,5 @@
 (ns app.login.view 
-  (:require [app.components.base :refer [button]]
+  (:require [app.components.base       :refer [button]]
             [app.components.card-parts :refer [card card-content card-description
                                                card-header card-title]]
             [app.components.text-input :refer [text-input]]
@@ -8,6 +8,11 @@
 
             [app.login.form  :as form]
             [app.login.model :as model]))
+
+(defn handle-key-down [event]
+  (when (= (.-key event) "Enter")
+    (.preventDefault event)
+    (model/on-submit)))
 
 (defn login-view
   []
@@ -21,9 +26,9 @@
      [card-description
       "Войдите в систему заказа обедов"]]
     [card-content
-     [:div.grid.gap-4
+     [:form.grid.gap-4 {:on-key-down handle-key-down}
       [text-input form/form-path [:username]]
-      [text-input form/form-path [:password]]
+      [text-input form/form-path [:password] {:props {:type "password"}}]
       [button
        {:type "primary" :on-click model/on-submit}
        "Войти"]]]]])

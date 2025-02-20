@@ -1,7 +1,9 @@
 (ns app.layout.navbar
-  (:require ["lucide-react" :refer [Clock User Settings ShoppingCart ChevronDown]]
+  (:require ["lucide-react" :refer [Clock User Settings ChevronDown]]
             
-            [re-frame.core :as rf]
+            [re-frame.core :refer [dispatch subscribe]]
+
+            [app.components.base :refer [button]]
             
             [app.components.dropdown :refer [dropdown]]))
 
@@ -9,8 +11,8 @@
   [label page-name]
   [:button.block.px-4.py-2.text-sm.text-gray-700.hover:bg-gray-100.w-full.text-left
    {:on-click #(do
-                 #_(rf/dispatch [:set-active-section section-name])
-                 (rf/dispatch [:navigate page-name]))}
+                 #_(dispatch [:set-active-section section-name])
+                 (dispatch [:navigate page-name]))}
    label])
 
 (defn admin-menu
@@ -39,13 +41,13 @@
                     (if (= current-page page-name)
                       ["border-blue-500" "text-gray-900"]
                       ["border-transparent" "text-gray-500"]))
-    :on-click #(rf/dispatch [:navigate page-name])}
+    :on-click #(dispatch [:navigate page-name])}
    [:> icon {:class ["w-5" "h-5" "mr-2"]}]
    label])
 
 (defn navigation
   [current-page]
-  (let [authenticated? @(rf/subscribe [:db/get [:auth :authenticated?]])]
+  (let [authenticated? @(subscribe [:db/get [:auth :authenticated?]])]
     [:nav.bg-white.shadow-sm
      [:div.max-w-6xl.mx-auto.px-4
       [:div.flex.justify-between.h-16
@@ -55,5 +57,11 @@
         (when authenticated?
           [admin-menu])]
        [:div.flex.items-center
-        [:> User {:class ["w-5" "h-5" "text-gray-500"]}]
-        [:span.ml-2.text-gray-700 "Иван Петров"]]]]]))
+        (if authenticated?
+          [:<>
+           [:> User {:class ["w-5" "h-5" "text-gray-500"]}]
+           [:span.ml-2.text-gray-700 "Иван Петров"]]
+          [button
+           {:type     "primary"
+            :on-click #(dispatch [:navigate :login])}
+           "Войти"])]]]]))
