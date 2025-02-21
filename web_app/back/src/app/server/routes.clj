@@ -23,6 +23,7 @@
             [app.handlers.crud-handler       :as crud]
             [app.handlers.category-handler   :as category-handler]
             [app.handlers.daily-menu-handler :as daily-menu-handler]
+            [app.handlers.user-handler       :as user-handler]
             [app.models.category :as category]
             [app.models.dish     :as dish]
             [app.models.order    :as order]
@@ -144,6 +145,9 @@
                 :handler (crud/list-handler user-model)}
          :post {:summary "Создание нового пользователя"
                 :handler (crud/create-handler user-model)}}]
+       ["/self/"
+        {:get {:summary "Получение информации о текущем пользователе"
+               :handler (user-handler/get-self-user datasource)}}]
        ["/:id"
         {:get    {:summary "Получение пользователя по ID"
                   :handler (crud/read-handler user-model)}

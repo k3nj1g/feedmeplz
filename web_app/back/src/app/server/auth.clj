@@ -1,10 +1,10 @@
 (ns app.server.auth
   (:require [clojure.string :as str]
-            
+
             [java-time.api      :as jt]
             [buddy.sign.jwt     :as jwt]
             [ring.util.response :as response]
-            
+
             [app.handlers.user-handler :as user-handler]))
 
 (def secret (System/getenv "JWT_SECRET"))
