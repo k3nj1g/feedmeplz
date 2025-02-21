@@ -22,7 +22,6 @@
 (reg-event-fx
  ::set-active-page
  (fn [{:keys [db]} [_ {:keys [page route-params]}]]
-   (println (-> db :auth :authenticated?) page)
    (if (-> db :auth :authenticated?)
      (if (= page :login)
        {:navigate [:current-menu]}

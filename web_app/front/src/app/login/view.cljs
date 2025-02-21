@@ -9,6 +9,10 @@
             [app.login.form  :as form]
             [app.login.model :as model]))
 
+(defn handle-submit [event]
+  (.preventDefault event)
+  (model/on-submit))
+
 (defn handle-key-down [event]
   (when (= (.-key event) "Enter")
     (.preventDefault event)
@@ -30,7 +34,7 @@
       [text-input form/form-path [:username]]
       [text-input form/form-path [:password] {:props {:type "password"}}]
       [button
-       {:type "primary" :on-click model/on-submit}
+       {:type "primary" :on-click handle-submit}
        "Войти"]]]]])
 
 (defmethod routes/pages :login [] login-view)
