@@ -1,7 +1,7 @@
 (ns app.handlers.user-handler
   (:require [buddy.hashers      :as hashers]
             [ring.util.response :as response]
-            
+
             [app.server.db :refer [execute-query]]
             [ps]))
 
@@ -23,7 +23,7 @@
     (ps/persist-scope)
     (if-let [user-id (get-in request [:identity :user])]
       (if-let [user (first (execute-query datasource
-                                          {:select [:id :username :email :role]
+                                          {:select [:id :username :email :telegram_id :is_active :is_staff :is_admin]
                                            :from   [:users]
                                            :where  [:= :id user-id]}))]
         (response/response user)

@@ -15,6 +15,7 @@
 
             [ring.middleware.cors           :refer  [wrap-cors]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [ring.middleware.cookies        :refer [wrap-cookies]]
 
             [malli.util :as mu]
 
@@ -69,7 +70,14 @@
                                          [:token string?]]}
                              401 {:body [:map
                                          [:error string?]]}}
-                :handler    (auth/login-handler datasource)}}]]
+                :handler    (auth/login-handler datasource)}}]
+       ["/refresh-token"
+        {:post {:summary   "Обновление токена доступа"
+                :responses {200 {:body [:map
+                                        [:token string?]]}
+                            401 {:body [:map
+                                        [:error string?]]}}
+                :handler   (auth/refresh-token-handler datasource)}}]]
 
       ["/categories"
        {:swagger {:tags ["Categories"]}}
@@ -179,6 +187,16 @@
                 {}))
    :wrap    wrap-keyword-params})
 
+(def cors-middleware
+  {:name    ::cors
+   :compile (fn [_ _] {})
+   :wrap    wrap-cors})
+
+(def cookies-middleware
+  {:name    ::cookies
+   :compile (fn [_ _] {})
+   :wrap    wrap-cookies})
+
 (defn create-app [datasource]
   (-> (reitit-ring/ring-handler
        (reitit-ring/router
@@ -187,6 +205,11 @@
                 :exception  pretty/exception
                 :muuntaja   m/instance
                 :middleware [swagger/swagger-feature
+                             [cors-middleware
+                              :access-control-allow-origin       (re-pattern (System/getenv "FRONTEND_URL"))
+                              :access-control-allow-methods      [:get :post :patch :put :delete]
+                              :access-control-allow-credentials "true"]
+                             cookies-middleware
                              parameters/parameters-middleware
                              parameters-middleware
                              muuntaja/format-middleware
@@ -198,6 +221,4 @@
                 :validate   mu/closed-schema}})
        (reitit-ring/routes
         (reitit-ring/create-default-handler
-         {:not-found (constantly {:status 404, :body "Not Found"})})))
-      (wrap-cors :access-control-allow-origin [#"http://localhost:8280"]
-                 :access-control-allow-methods [:get :post :patch :put :delete])))
+         {:not-found (constantly {:status 404, :body "Not Found"})})))))
