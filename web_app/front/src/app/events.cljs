@@ -5,7 +5,9 @@
             [re-frame.core :refer [dispatch reg-cofx reg-event-fx reg-event-db reg-fx]]
             [day8.re-frame.http-fx]
 
-            [app.db :as db]))
+            [app.db :as db]
+
+            [app.auth.events :as auth]))
 
 (reg-event-db
  ::initialize-db
@@ -71,10 +73,11 @@
   (let [token (get-in db [:auth :token])]
     (cond-> (-> request
                 (update :uri (partial str (get-in db [:config :api-url])))
-                (merge {:timeout         8000
-                        :response-format (ajax/json-response-format {:keywords? true})
-                        :on-success      [:success-http-result request]
-                        :on-failure      [:bad-http-result]}))
+                (merge {:timeout          8000
+                        :response-format  (ajax/json-response-format {:keywords? true})
+                        :with-credentials true
+                        :on-success       [:success-http-result request]
+                        :on-failure       [:bad-http-result request]}))
 
       token
       (assoc-in [:headers "Authorization"] (str "Bearer " token))
@@ -90,9 +93,13 @@
 (reg-event-fx
  :http/request
  (fn [{:keys [db]} [_ request]]
-   {:http-xhrio (if (vector? request)
-                  (mapv (partial make-xhrio-request db) request)
-                  (make-xhrio-request db request))}))
+   (let [token         (get-in db [:auth :token])
+         xhrio-request (if (vector? request)
+                         (mapv (partial make-xhrio-request db) request)
+                         (make-xhrio-request db request))]
+     (if (and token (auth/token-expired? token))
+       {:dispatch   [::auth/refresh-token token xhrio-request]}
+       {:http-xhrio xhrio-request}))))
 
 (reg-event-fx
  :success-http-result
@@ -105,9 +112,11 @@
 
 (reg-event-fx
  :bad-http-result
- (fn [_ [_ resp]]
-   {:toast {:message (str "Произошла ошибка: " (:status resp))
-            :type    :error}}))
+ (fn [_ [_ {:keys [failure]} resp]]
+   (cond-> {:toast {:message (str "Произошла ошибка: " (:status resp))
+                    :type    :error}}
+     failure
+     {:dispatch failure})))
 
 (reg-fx
  :http/request

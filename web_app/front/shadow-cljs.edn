@@ -12,7 +12,7 @@
                   :devtools   {:preloads [day8.re-frame-10x.preload]}
                   :dev        {:compiler-options {:closure-defines {re-frame.trace.trace-enabled?        true
                                                                     day8.re-frame.tracing.trace-enabled? true
-                                                                    app.config/API_URL                   "http://localhost:8090"}}}
+                                                                    app.config/API_URL                   #shadow/env "API_URL"}}}
                   :release    {:build-options    {:ns-aliases {day8.re-frame.tracing day8.re-frame.tracing-stubs}}
                                :compiler-options {:closure-defines {app.config/API_URL #shadow/env "API_URL"}
                                                   :optimizations   :advanced

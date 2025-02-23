@@ -25,6 +25,6 @@
 (defn ^:export init []
   (routes/start!)
   (rf/dispatch-sync [::events/initialize-db])
-  (rf/dispatch-sync [::auth/load-token])
+  (rf/dispatch-sync [::auth/init])
   (dev-setup)
   (mount-root))

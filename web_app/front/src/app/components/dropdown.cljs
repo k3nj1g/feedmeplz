@@ -35,7 +35,8 @@
          (when @open?
            [:div.absolute.z-10.mt-2.w-56.rounded-md.shadow-lg.bg-white.ring-1.ring-black.ring-opacity-5
             {:class (case placement
-                      :top "top-full")}
+                      :top       "top-full"
+                      :top-right "top-full right-0")}
             [:div
              {:on-click close-dropdown}
              content]])])})))

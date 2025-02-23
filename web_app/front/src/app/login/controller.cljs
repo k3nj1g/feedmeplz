@@ -28,4 +28,5 @@
  ::handle-auth-success
  (fn [_ [_ response]]
    {:fx [[:dispatch [::auth/set-token (:token response)]]
+         [:dispatch [::auth/get-user-info]]
          [:dispatch [:navigate :current-menu]]]}))

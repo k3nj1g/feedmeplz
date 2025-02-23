@@ -5,14 +5,14 @@
 
             [app.components.base :refer [button]]
             
-            [app.components.dropdown :refer [dropdown]]))
+            [app.components.dropdown :refer [dropdown]]
+            
+            [app.auth.events :as auth]))
 
 (defn admin-menu-item
   [label page-name]
   [:button.block.px-4.py-2.text-sm.text-gray-700.hover:bg-gray-100.w-full.text-left
-   {:on-click #(do
-                 #_(dispatch [:set-active-section section-name])
-                 (dispatch [:navigate page-name]))}
+   {:on-click #(dispatch [:navigate page-name])}
    label])
 
 (defn admin-menu
@@ -20,9 +20,7 @@
   [dropdown
    {:popup-id  :admin
     :trigger   {:tag     :button
-                :props   {:class (cond-> ["inline-flex" "items-center"]
-                                   true
-                                   (conj "border-transparent" "text-gray-500"))}
+                :props   {:class ["inline-flex" "items-center" "text-gray-500"]}
                 :content [:<>
                           [:> Settings {:class ["w-5" "h-5" "mr-2"]}]
                           "Управление"
@@ -47,7 +45,7 @@
 
 (defn navigation
   [current-page]
-  (let [authenticated? @(subscribe [:db/get [:auth :authenticated?]])]
+  (let [{:keys [authenticated? user-info]} @(subscribe [:db/get [:auth]])]
     [:nav.bg-white.shadow-sm
      [:div.max-w-6xl.mx-auto.px-4
       [:div.flex.justify-between.h-16
@@ -58,9 +56,18 @@
           [admin-menu])]
        [:div.flex.items-center
         (if authenticated?
-          [:<>
-           [:> User {:class ["w-5" "h-5" "text-gray-500"]}]
-           [:span.ml-2.text-gray-700 "Иван Петров"]]
+          [dropdown
+           {:popup-id  :user
+            :trigger   {:tag     :button
+                        :props   {:class ["inline-flex" "items-center"]}
+                        :content [:<>
+                                  [:> User {:class ["w-5" "h-5" "text-gray-500"]}]
+                                  [:span.ml-2.text-gray-700 (:username user-info)]]}
+            :content   [:div.py-1
+                        [:button.block.px-4.py-2.text-sm.text-gray-700.hover:bg-gray-100.w-full.text-left
+                         {:on-click #(dispatch [::auth/logout])}
+                         "Выйти"]]
+            :placement :top-right}]
           [button
            {:type     "primary"
             :on-click #(dispatch [:navigate :login])}
