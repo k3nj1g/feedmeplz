@@ -15,6 +15,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: ${POSTGRES_PORT}
       HTTP_SERVER_PORT: ${HTTP_SERVER_PORT}
+      FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       - db
 
