@@ -2,8 +2,7 @@
   (:require [buddy.hashers      :as hashers]
             [ring.util.response :as response]
 
-            [app.server.db :refer [execute-query]]
-            [ps]))
+            [app.server.db :refer [execute-query]]))
 
 (defn find-by-username
   [datasource username]
@@ -20,7 +19,6 @@
 (defn get-self-user
   [datasource]
   (fn [request]
-    (ps/persist-scope)
     (if-let [user-id (get-in request [:identity :user])]
       (if-let [user (first (execute-query datasource
                                           {:select [:id :username :email :telegram_id :is_active :is_staff :is_admin]
