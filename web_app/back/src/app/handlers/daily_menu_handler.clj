@@ -1,11 +1,11 @@
 (ns app.handlers.daily-menu-handler
   (:require [java-time.api      :as jt]
             [ring.util.response :as response]
-            
+
             [app.models.crud            :as crud]
             [app.models.daily-menu      :as daily-menu]
             [app.models.daily-menu-item :as daily-menu-item]
-            
+
             [app.helpers :as h]
 
             [app.server.db :refer [with-transaction]]))
@@ -56,17 +56,23 @@
         (try
           (with-transaction [tx datasource]
             (let [menu-id    (get-in request [:path-params :id])
+                  menu       (crud/read (daily-menu/model tx) menu-id)
                   menu-items (doall
                               (map
-                               (fn [{:keys [price item-id] dish-id :id :as d} ]
+                               (fn [{:keys [price item-id] dish-id :id}]
                                  (let [data (prepare-data {:daily_menu_id (h/as-int menu-id)
                                                            :dish_id       dish-id
                                                            :price         price})]
-                                   (prn d)
                                    (if item-id
                                      (crud/update! (daily-menu-item/model tx) item-id data)
                                      (crud/create! (daily-menu-item/model tx) data))))
-                               dishes))]
+                               dishes))
+                  to-delete   (->> menu :menu_items
+                                   (remove (fn [item]
+                                             (some (partial = (:dish_id item)) (map :id dishes)))))]
+              (doseq [item to-delete]
+                (crud/delete! (daily-menu-item/model tx) (:id item)))
+
               (response/created "" {:menu (crud/read (daily-menu/model tx) menu-id) :menu_items menu-items})))
           (catch Exception e
             (response/bad-request {:error (.getMessage e)})))))))

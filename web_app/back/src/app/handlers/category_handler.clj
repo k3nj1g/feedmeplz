@@ -8,7 +8,8 @@
   (fn [request]
     (let [category-id (get-in request [:path-params :category_id])
           dishes      (execute-query datasource
-                                     {:select [:*]
-                                      :from   [:dishes]
-                                      :where  [:= :category_id [:cast category-id :integer]]})]
+                                     {:select   [:*]
+                                      :from     [:dishes]
+                                      :where    [:= :category_id [:cast category-id :integer]]
+                                      :order-by [[:name :asc]]})]
       (response/response dishes))))
