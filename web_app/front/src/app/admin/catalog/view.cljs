@@ -70,18 +70,22 @@
      [dialog-title
       {:class "!pb-0"}
       (if (:id dish) "Редактировать блюдо" "Новое блюдо")]
-     [:div]
      [dialog-content
-      [:div.grid.gap-4
-       [text-input form/form-path-update [:name] 
-        {:adornment "₽"}]
-       [text-input form/form-path-update [:description]]
-       [:div.grid.grid-cols-3.gap-4
-        [text-input form/form-path-update [:price]]
-        [text-input form/form-path-update [:weight]
-         {:adornment "г"}]
-        [text-input form/form-path-update [:kcals]
-         {:adornment "ккал"}]]]]
+      [:form
+       {:on-key-down (fn [event]
+                       (when (= (.-key event) "Enter")
+                         (.preventDefault event)
+                         (on-save)))}
+       [:div.grid.gap-4
+        [text-input form/form-path-update [:name]
+         {:adornment "₽"}]
+        [text-input form/form-path-update [:description]]
+        [:div.grid.grid-cols-3.gap-4
+         [text-input form/form-path-update [:price]]
+         [text-input form/form-path-update [:weight]
+          {:adornment "г"}]
+         [text-input form/form-path-update [:kcals]
+          {:adornment "ккал"}]]]]]
 
       [:div
        {:class ["px-4" "pb-4"]}

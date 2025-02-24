@@ -88,7 +88,7 @@
   []
   (let [daily-menus @(subscribe [::model/daily-menus])
         categories  @(subscribe [::model/categories])]
-    [:<>
+    [:div.flex.flex-col.gap-4
      (if (seq daily-menus)
        (for [daily-menu daily-menus]
          ^{:key (get-in daily-menu [:menu :id])}
