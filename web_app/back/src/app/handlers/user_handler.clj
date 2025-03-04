@@ -13,7 +13,7 @@
 (defn authenticate-user
   [datasource {:keys [username password]}]
   (when-let [user (first (find-by-username datasource username))]
-    (when (hashers/verify password (:password_hash user))
+    (when (:valid (hashers/verify password (:password_hash user)))
       (dissoc user :password_hash))))
 
 (defn get-self-user
