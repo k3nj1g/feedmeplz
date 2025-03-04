@@ -49,10 +49,10 @@
        [:div.flex.space-x-2
         [:button.p-2.text-gray-500.hover:text-blue-500
          {:on-click on-edit}
-         [:> Edit {:class [:w-4 :h-4]}]]
+         [:> Edit {:class ["w-5" "h-5" "text-blue-500"]}]]
         [:button.p-2.text-gray-500.hover:text-red-500
          {:on-click on-delete}
-         [:> Trash2 {:class [:w-4 :h-4]}]]]]
+         [:> Trash2 {:class ["w-5" "h-5" "text-red-500"]}]]]]
       [:div.flex.space-x-4.mt-2.text-sm.text-gray-500
        [:span (str (:price dish) " ₽")]
        [:span (str (:weight dish) " г")]
@@ -71,7 +71,7 @@
       {:class "!pb-0"}
       (if (:id dish) "Редактировать блюдо" "Новое блюдо")]
      [dialog-content
-      [:form
+      [:form.pt-5
        {:on-key-down (fn [event]
                        (when (= (.-key event) "Enter")
                          (.preventDefault event)
