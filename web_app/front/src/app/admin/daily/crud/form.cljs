@@ -19,3 +19,18 @@
              {}
              categories))})
 
+(def form-path-update [:form :dish])
+
+(def form-schema-update
+  {:type   :form
+   :fields {:category_id {:type :number}
+            :name        {:type       :string
+                          :label      "Название"
+                          :validators {:required {:message "Укажите название"}}}
+            :price       {:type       :number
+                          :label      "Цена"
+                          :validators {:required {:message "Укажите цену"}}}
+            :kcals       {:type  :number
+                          :label "Калории"}
+            :weight      {:type  :number
+                          :label "Вес"}}})

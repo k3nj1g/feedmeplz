@@ -33,7 +33,9 @@
  (fn [[_ category] _]
    [(subscribe [:zf/get-value form/form-path [(form/category->path category) :dishes]])])
  (fn [[selected-items] _]
-   (sort-by :name selected-items)))
+   (->> selected-items
+        (sort-by :name)
+        (map #(assoc % :on-edit (h/action [::ctrl/init-edit-dish %]))))))
 
 (reg-sub
  ::selected-items-count
@@ -51,3 +53,9 @@
  (fn [[selected-items-count id] _]
    {:save {:on-click (h/action (if id [::ctrl/update-daily-menu-flow] [::ctrl/create-daily-menu-flow]))
            :disabled (= selected-items-count 0)}}))
+
+(reg-sub
+ ::edit-dish-dialog-data
+ (fn [db _]
+   (let [dish (get-in db [:dialogs :edit-dish :data])]
+     {:on-save (h/action [::ctrl/save-dish-flow dish])})))

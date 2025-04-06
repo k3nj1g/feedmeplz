@@ -1,8 +1,13 @@
 (ns app.admin.daily.crud.view
-  (:require ["lucide-react" :refer [Calendar X Save ChevronDown Search List]]
+  (:require ["lucide-react" :refer [Calendar Edit X Save ChevronDown Search List]]
             [re-frame.core :refer [dispatch subscribe]]
 
             [reagent.core :as r]
+
+            [reagent-mui.material.dialog :refer [dialog]]
+            [reagent-mui.material.dialog-actions :refer [dialog-actions]]
+            [reagent-mui.material.dialog-content :refer [dialog-content]]
+            [reagent-mui.material.dialog-title :refer [dialog-title]]
 
             [app.components.base       :refer [button heading]]
             [app.components.card-parts :refer [card card-header card-content]]
@@ -35,7 +40,6 @@
 (defn header
   [show-selected]
   (let [date @(subscribe [::model/daily-menu-date])]
-    (prn date)
     [:div.flex.justify-between.items-center.mb-6
      [heading
       [:div.flex.gap-2
@@ -63,6 +67,9 @@
             [:span (:name item)]
             [:div.flex.items-center
              [:span.text-gray-600.mr-2 (str (:price item) " ₽")]
+             [:button.p-2.text-gray-500.hover:text-blue-500
+              {:on-click (:on-edit item)}
+              [:> Edit {:class ["w-4" "h-4" "text-blue-500"]}]]
              [:button.text-red-500.hover:text-red-700
               {:on-click #(remove-dish category selected-items item)}
               [:> X {:class "w-4 h-4"}]]]]])]])))
@@ -165,6 +172,42 @@
        [:> Save {:class "w-4 h-4 mr-2"}]
        "Сохранить меню"]]]))
 
+(defn edit-dish-dialog
+  []
+  (let [{:keys [open]}    @(subscribe [:dialog-state :edit-dish])
+        on-close          #(dispatch [:close-dialog :edit-dish])
+        {:keys [on-save]} @(subscribe [::model/edit-dish-dialog-data])]
+    [dialog
+     {:open       (boolean open)
+      :full-width true
+      :max-width  "sm"}
+     [dialog-title
+      {:class "!pb-0"}
+      "Редактировать блюдо"]
+     [dialog-content
+      [:form.pt-5
+       {:on-key-down (fn [event]
+                       (when (= (.-key event) "Enter")
+                         (.preventDefault event)
+                         (on-save)))}
+       [:div.grid.gap-4
+        [text-input form/form-path-update [:name]]
+        [:div.grid.grid-cols-3.gap-4
+         [text-input form/form-path-update [:price]
+          {:adornment "₽"}]
+         [text-input form/form-path-update [:weight]
+          {:adornment "г"}]
+         [text-input form/form-path-update [:kcals]
+          {:adornment "ккал"}]]]]]
+
+     [:div
+      {:class ["px-4" "pb-4"]}
+      [dialog-actions
+       [button {:on-click on-close} "Отмена"]
+       [button {:type "success" :on-click on-save}
+        [:> Save {:class "w-4 h-4 mr-2"}]
+        "Сохранить"]]]]))
+
 (defn menu-day-management
   []
   (let [show-selected   (r/atom false)
@@ -175,6 +218,7 @@
        (when @show-selected
          [selected-dishes])
        [dishes-by-categories active-category]
+       [edit-dish-dialog]
        [footer]])))
 
 (defmethod app.routes/pages :admin-daily-create [] menu-day-management)

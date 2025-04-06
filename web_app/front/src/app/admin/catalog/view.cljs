@@ -77,11 +77,10 @@
                          (.preventDefault event)
                          (on-save)))}
        [:div.grid.gap-4
-        [text-input form/form-path-update [:name]
-         {:adornment "₽"}]
-        [text-input form/form-path-update [:description]]
+        [text-input form/form-path-update [:name]]
         [:div.grid.grid-cols-3.gap-4
-         [text-input form/form-path-update [:price]]
+         [text-input form/form-path-update [:price]
+          {:adornment "₽"}]
          [text-input form/form-path-update [:weight]
           {:adornment "г"}]
          [text-input form/form-path-update [:kcals]

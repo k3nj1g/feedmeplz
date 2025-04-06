@@ -4,8 +4,7 @@
             [app.helpers :as h]
             
             [app.admin.catalog.controller :as ctrl]
-            [app.admin.catalog.form       :as form])
-  (:require-macros [ps]))
+            [app.admin.catalog.form       :as form]))
 
 (reg-sub
  ::data

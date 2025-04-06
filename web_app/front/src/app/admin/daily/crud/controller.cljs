@@ -1,7 +1,8 @@
 (ns app.admin.daily.crud.controller
   (:require [re-frame.core :refer [reg-event-fx]]
 
-            [tick.core :as t]
+            [tick.core     :as t]
+            [zenform.model :as zf]
 
             [app.helpers :as h]
 
@@ -133,6 +134,7 @@
                              :dishes (->> data :form-value
                                           (vals)
                                           (mapcat (comp :dishes))
+                                          (sort-by (juxt :category_id :name))
                                           (remove nil?))}
                    :success (h/success-event success data)}}))
 
@@ -143,3 +145,38 @@
                :type    :success}
     :dispatch [:navigate :admin-daily-list]}))
 ;;------
+
+;;--- Edit dish events ---
+(reg-event-fx
+ ::init-edit-dish
+ (fn [_ [_ dish]]
+   {:fx [[:dispatch [:open-dialog :edit-dish dish]]
+         [:dispatch [:zf/init form/form-path-update form/form-schema-update dish]]]}))
+
+(reg-event-fx
+ ::save-dish-flow
+ (fn [_ [_ dish]]
+   {:dispatch [:zf/eval-form form/form-path-update
+               {:data    {:dish dish}
+                :success {:event ::update-dish}}]}))
+
+(reg-event-fx
+ ::update-dish
+ (fn [_ [_ {:keys [data]}]]
+   {:http/request {:method  :put
+                   :uri     (str "/api/dishes/" (:id (:dish data)))
+                   :body    (:form-value data)
+                   :success {:event  ::dish-save-success
+                             :params data}}}))
+
+(reg-event-fx
+ ::dish-save-success
+ (fn [{db :db} [_ {:keys [form-value dish]}]]
+   (let [category-dishes (zf/get-value (get-in db form/form-path) [(form/category->path {:id (:category_id dish)}) :dishes])]
+     {:toast {:message "Блюдо успешно обновлено"
+              :type    :success}
+      :fx    [[:dispatch [:close-dialog :edit-dish]]
+              [:dispatch [:zf/set-value
+                          form/form-path
+                          [(form/category->path {:id (:category_id dish)}) :dishes]
+                          (mapv (fn [item] (if (= (:id item) (:id dish)) (merge item form-value) item)) category-dishes)]]]})))
