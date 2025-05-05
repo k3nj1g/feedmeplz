@@ -9,9 +9,10 @@
             [reagent-mui.material.dialog-content :refer [dialog-content]]
             [reagent-mui.material.dialog-title :refer [dialog-title]]
 
-            [app.components.base       :refer [button heading]]
-            [app.components.card-parts :refer [card card-header card-content]]
-            [app.components.text-input :refer [text-input]]
+            [app.components.base        :refer [button heading]]
+            [app.components.card-parts  :refer [card card-header card-content]]
+            [app.components.date-picker :refer [date-picker]]
+            [app.components.text-input  :refer [text-input]]
 
             [app.routes :as routes]
 
