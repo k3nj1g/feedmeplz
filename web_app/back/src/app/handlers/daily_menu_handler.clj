@@ -46,6 +46,7 @@
 (defn list-handler [datasource]
   (fn [request]
     (let [menus (crud/list-all (daily-menu/model datasource) (:params request))]
+      (prn menus)
       (response/response menus))))
 
 (defn update-handler [datasource]

@@ -1,50 +1,35 @@
 (ns app.components.date-picker
-  (:require [reagent.core :as r]
-            
+  (:require [reagent.core  :as r]
+            [re-frame.core :refer [dispatch subscribe]]
+
             [reagent-mui.material.text-field     :refer [text-field]]
-            [reagent-mui.x.date-picker           :refer [date-picker]]
+            [reagent-mui.cljs-time-adapter       :refer [cljs-time-adapter]]
+            [reagent-mui.x.date-picker           :refer [date-picker] :rename {date-picker mui-date-picker}]
             [reagent-mui.x.localization-provider :refer [localization-provider]]
-            [reagent-mui.x.adapter-date-fns      :refer [adapter-date-fns]]
             
-            [date-fns-ru :as date-fns-ru]))
+            [app.utils.date :as date-utils])
+  (:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn date-picker
-  "Компонент выбора даты с русской локализацией.
-   
-   Параметры:
-   - value: текущее значение даты (объект Date или строка в формате ISO)
-   - on-change: функция, вызываемая при изменении даты
-   - label: метка поля (опционально)
-   - disabled: флаг отключения компонента (опционально)
-   - min-date: минимальная доступная дата (опционально)
-   - max-date: максимальная доступная дата (опционально)
-   - format: формат отображения даты (опционально, по умолчанию 'dd.MM.yyyy')
-   - class: дополнительные CSS классы (опционально)
-   
-   Пример использования:
-   [date-picker {:value (js/Date.)
-                 :on-change #(js/console.log %)
-                 :label \"Выберите дату\"}]"
-  [{:keys [value on-change label disabled min-date max-date format class]
-    :or {format "dd.MM.yyyy"}}]
-  (let [date-value (if (string? value)
-                     (js/Date. value)
-                     value)]
-    [localization-provider {:date-adapter adapter-date-fns
-                            :adapter-locale date-fns-ru/ru}
-     [date-picker
-      (cond-> {:value date-value
-               :input-format format
-               :onChange on-change
-               :renderInput (fn [params]
-                              (r/as-element
-                               [text-field
-                                (merge
-                                 (js->clj params :keywordize-keys true)
-                                 {:fullWidth true
-                                  :variant "outlined"
-                                  :class class})]))}
+  [form-path path {:keys [label disabled min-date max-date format class]
+                   :or {format "dd.MM.yyyy"}}]
+  (let [value @(subscribe [:zf/get-value form-path path])]
+    [localization-provider {:date-adapter   cljs-time-adapter
+                            :adapter-locale DateTimeSymbols_en_US}
+     [mui-date-picker
+      (cond-> {:value     (date-utils/parse-date value)
+               :on-change (fn [value]
+                            (dispatch [:zf/set-value form-path path (date-utils/to-iso-date value)]))
+               :inputFormat format
+               :render-input (fn [^js params]
+                               (let [params' (js->clj params :keywordize-keys true)]
+                                 (r/as-element
+                                  [text-field
+                                   (merge params'
+                                          {:class class
+                                           :size  "small"})])))}
         label (assoc :label label)
         disabled (assoc :disabled disabled)
-        min-date (assoc :minDate min-date)
+        min-date (assoc :minDate (date-utils/parse-date min-date))
         max-date (assoc :maxDate max-date))]]))
+

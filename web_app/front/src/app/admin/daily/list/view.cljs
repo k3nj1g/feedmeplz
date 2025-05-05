@@ -50,6 +50,7 @@
 
 (defn daily-menu-view
   [categories {:keys [menu menu-items]}]
+  (prn (:date menu))
   (r/with-let [expanded-menu-id (r/atom nil)]
     (let [menu-disabled (t/< (t/date (t/instant (:date menu))) (t/date))]
       [card

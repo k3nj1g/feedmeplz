@@ -1,5 +1,5 @@
 (ns app.admin.daily.crud.view
-  (:require ["lucide-react" :refer [Calendar Edit X Save ChevronDown Search List]]
+  (:require ["lucide-react" :refer [Edit X Save ChevronDown Search List]]
             [re-frame.core :refer [dispatch subscribe]]
 
             [reagent.core :as r]
@@ -17,7 +17,6 @@
             [app.routes :as routes]
 
             [app.helpers    :as h]
-            [app.utils.date :as date-utils]
 
             [app.admin.daily.crud.form  :as form]
             [app.admin.daily.crud.model :as model])
@@ -40,19 +39,19 @@
 
 (defn header
   [show-selected]
-  (let [date @(subscribe [::model/daily-menu-date])]
-    [:div.flex.justify-between.items-center.mb-6
-     [heading
-      [:div.flex.gap-2
-       "Меню дня"
-       [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.text
-        [:> Calendar {:class "w-4 h-4"}]
-        (date-utils/->ru-verbose (if date (js/Date. date) (js/Date.)))]]]
-     [button
-      {:type     "primary"
-       :on-click #(swap! show-selected not)}
-      [:> List {:class "w-4 h-4 mr-2"}]
-      (if @show-selected "Скрыть выбранное" "Показать выбранное")]]))
+  [:div.flex.justify-between.items-center.mb-6
+   [heading
+    [:div.flex.gap-2
+     "Меню дня"
+     [date-picker form/form-path [:date]
+      {:on-change #(dispatch [::model/set-daily-menu-date %])
+       :class     "w-40"
+       :min-date  (js/Date.)}]]]
+   [button
+    {:type     "primary"
+     :on-click #(swap! show-selected not)}
+    [:> List {:class "w-4 h-4 mr-2"}]
+    (if @show-selected "Скрыть выбранное" "Показать выбранное")]])
 
 (defn selected-dishes-by-category
   [category]
