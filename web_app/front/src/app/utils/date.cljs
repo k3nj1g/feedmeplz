@@ -25,12 +25,3 @@
   [date]
   (when date
     (tf/unparse (tf/formatters :date) date)))
-
-(defn to-moscow-midnight
-  "Преобразует дату в формате ISO 8601 в полночь по московскому времени"
-  [date-string]
-  (when date-string
-    (let [date (tf/parse (tf/formatters :date-time) date-string)
-          moscow-date (t/to-time-zone date (t/time-zone-for-offset 3))
-          midnight (t/at-midnight moscow-date)]
-      (tf/unparse (tf/formatter "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") midnight))))

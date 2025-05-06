@@ -8,14 +8,14 @@
             [reagent-mui.x.localization-provider :refer [localization-provider]]
             
             [app.utils.date :as date-utils])
-  (:import (goog.i18n DateTimeSymbols_en_US)))
+  (:import (goog.i18n DateTimeSymbols_ru)))
 
 (defn date-picker
   [form-path path {:keys [label disabled min-date max-date format class]
                    :or {format "dd.MM.yyyy"}}]
   (let [value @(subscribe [:zf/get-value form-path path])]
     [localization-provider {:date-adapter   cljs-time-adapter
-                            :adapter-locale DateTimeSymbols_en_US}
+                            :adapter-locale DateTimeSymbols_ru}
      [mui-date-picker
       (cond-> {:value     (date-utils/parse-date value)
                :on-change (fn [value]
@@ -32,4 +32,3 @@
         disabled (assoc :disabled disabled)
         min-date (assoc :minDate (date-utils/parse-date min-date))
         max-date (assoc :maxDate max-date))]]))
-
