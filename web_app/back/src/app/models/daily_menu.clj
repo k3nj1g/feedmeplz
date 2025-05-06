@@ -58,7 +58,7 @@
   
   (list-all [_ {:keys [date] :as _params}]
     (let [query (cond-> {:select   [:dm.*
-                                    [[:jsonb_agg 
+                                    [[:jsonb_agg
                                       [:||
                                        [:to_jsonb :dmi.*]
                                        [:to_jsonb :d.*]
@@ -71,10 +71,10 @@
                          :from     [[table-name :dm]]
                          :join     [[:daily_menu_items :dmi]
                                     [:= :dm.id :dmi.daily_menu_id]
-                                    
+
                                     [:dishes :d]
                                     [:= :d.id :dmi.dish_id]
-                                    
+
                                     [:categories :c]
                                     [:= :d.category_id :c.id]]
                          :where    (cond-> [:and true]
@@ -84,8 +84,8 @@
                          :group-by [:dm.id]})]
       (->> (execute-query datasource-or-tx query)
            (mapv (fn [row]
-                   {:menu (dissoc row :menu_items)
-                    :menu-items (:menu_items row)}))))))
+                   {:menu       (dissoc row :menu_items)
+                    :menu-items (sort-by (juxt :category_id :name) (:menu_items row))}))))))
 
 (defn model [datasource]
   (->DailyMenuModel :daily_menus DailyMenuSchema datasource))
