@@ -13,6 +13,7 @@
     "@js-joda/timezone": "2.5.0",
     "@mui/base": "^5.0.0-beta.68",
     "@mui/material": "5.11.12",
+    "@mui/x-date-pickers": "^5.0.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "highlight.js": "11.5.1",

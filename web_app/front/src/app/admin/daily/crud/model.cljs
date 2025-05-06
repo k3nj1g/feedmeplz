@@ -13,12 +13,6 @@
    categories))
 
 (reg-sub
- ::daily-menu-date
- :<- [:http/response ::ctrl/daily-menu]
- (fn [daily-menu _]
-   (:date daily-menu)))
-
-(reg-sub
  ::dishes-by-category
  (fn [[_ category] _]
    [(subscribe [:http/response ::ctrl/dishes])

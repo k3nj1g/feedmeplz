@@ -51,7 +51,7 @@
 (defn daily-menu-view
   [categories {:keys [menu menu-items]}]
   (r/with-let [expanded-menu-id (r/atom nil)]
-    (let [menu-disabled (t/< (t/date (t/instant (:date menu))) (t/date))]
+    (let [menu-disabled (t/< (t/date (:date menu)) (t/date))]
       [card
        [:div.p-4.flex.items-center.justify-between
         [:div.flex.items-center.space-x-4

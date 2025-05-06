@@ -14,7 +14,7 @@
             
             [app.routes :as routes]
 
-            [app.components.text-input   :refer [text-input]]
+            [app.components.text-input :refer [text-input]]
             
             [app.admin.catalog.form  :as form]
             [app.admin.catalog.model :as model]))

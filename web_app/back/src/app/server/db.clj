@@ -5,10 +5,13 @@
 
             [next.jdbc            :as jdbc]
             [next.jdbc.result-set :as rs]
+            [next.jdbc.date-time  :as jdbc-dt]
 
             [app.server.next-jdbc-config]))
 
-(defn create-datasource [db-spec]
+(defn create-datasource
+  [db-spec]
+  (jdbc-dt/read-as-local)
   (hikari/make-datasource db-spec))
 
 (defmethod ig/init-key :persistent/database [_ config]

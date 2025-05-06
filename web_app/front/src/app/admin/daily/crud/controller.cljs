@@ -23,7 +23,7 @@
 (reg-event-fx
  ::init-blank-form
  (fn [_ [_ categories]]
-   {:dispatch [:zf/init form/form-path (form/form-schema categories) {:date (t/date)}]}))
+   {:dispatch [:zf/init form/form-path (form/form-schema categories) {:date (js/Date.)}]}))
 
 (reg-event-fx
  :admin-daily-update
@@ -58,7 +58,7 @@
                                                   (some #(when (= (:id %) dish-id)
                                                            (assoc % :item-id id)) dishes)) v)})) {}))]
          {:dispatch [:zf/init form/form-path (form/form-schema categories)
-                     (merge-with merge {:date (t/date (t/instant (:date daily-menu)))} init-data)]})))))
+                     (merge-with merge {:date (:date daily-menu)} init-data)]})))))
 ;;------
 
 ;;--- Flow events ---
@@ -90,7 +90,7 @@
  ::check-menu-date
  (fn [_ [_ {:keys [success data]}]]
    (let [selected-date (get-in data [:form-value :date])]
-     (if (t/< selected-date (t/date))
+     (if (t/< (t/date selected-date) (t/date))
        {:toast {:message "Запрещено создание/изменение меню для прошлых дат"
                 :type    :error}}
        {:dispatch (h/success-event-to-dispatch success data)}))))

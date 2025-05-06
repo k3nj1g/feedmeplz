@@ -15,7 +15,8 @@
   (-> data
       (update :price h/as-double)))
 
-(defn create-handler [datasource]
+(defn create-handler
+  [datasource]
   (fn [{:keys [body-params]}]
     (let [{:keys [date dishes] :or {date (jt/local-date)}} body-params]
       (if (jt/before? (jt/local-date date) (jt/local-date))
@@ -35,7 +36,8 @@
           (catch Exception e
             (response/bad-request {:error (.getMessage e)})))))))
 
-(defn read-handler [datasource]
+(defn read-handler
+  [datasource]
   (fn [request]
     (let [id   (get-in request [:path-params :id])
           menu (crud/read (daily-menu/model datasource) id)]
@@ -43,12 +45,14 @@
         (response/response menu)
         (response/not-found "Not found")))))
 
-(defn list-handler [datasource]
+(defn list-handler
+  [datasource]
   (fn [request]
     (let [menus (crud/list-all (daily-menu/model datasource) (:params request))]
       (response/response menus))))
 
-(defn update-handler [datasource]
+(defn update-handler
+  [datasource]
   (fn [{:keys [body-params] :as request}]
     (let [{:keys [date dishes]} body-params]
       (if (jt/before? (jt/local-date date) (jt/local-date))
@@ -64,7 +68,9 @@
                                                            :dish_id       dish-id
                                                            :price         price})]
                                    (if item-id
-                                     (crud/update! (daily-menu-item/model tx) item-id data)
+                                     (do 
+                                       (crud/update! (daily-menu/model tx) menu-id {:date (jt/local-date date)})
+                                       (crud/update! (daily-menu-item/model tx) item-id data))
                                      (crud/create! (daily-menu-item/model tx) data))))
                                dishes))
                   to-delete   (->> menu :menu_items
@@ -77,7 +83,8 @@
           (catch Exception e
             (response/bad-request {:error (.getMessage e)})))))))
 
-(defn delete-handler [datasource]
+(defn delete-handler 
+  [datasource]
   (fn [request]
     (let [id (get-in request [:path-params :id])
           deleted-menu (crud/delete! (daily-menu/model datasource) id)]
