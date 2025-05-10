@@ -15,7 +15,10 @@
                          :init-in-transaction? true
                          :migration-table-name "schema_migrations"
                          :db                   {:datasource #ig/ref :persistent/database}}
- :http/server           {:config     {:port  #long #or [#env HTTP_SERVER_PORT 8088]
+ :persistent/telegram   {:token          #env TELEGRAM_TOKEN
+                         :menu-sender-id #env TELEGRAM_MENU_SENDER_ID
+                         :datasource #ig/ref :persistent/database}
+ :http/server           {:config     {:port  #long #or [#env HTTP_SERVER_PORT 8080]
                                       :join? false}
                          :datasource #ig/ref :persistent/database}}
 
