@@ -24,4 +24,9 @@
 (defn to-iso-date
   [date]
   (when date
-    (tf/unparse (tf/formatters :date) date)))
+    (let [dt (cond
+               (instance? goog.date.Date date) date
+               (instance? js/Date date) (tc/from-date date)
+               (string? date) (tc/from-string date)
+               :else (throw (js/Error. "Unsupported date format")))]
+      (tf/unparse (tf/formatters :date) dt))))

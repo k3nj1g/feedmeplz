@@ -6,6 +6,8 @@
 
             [app.helpers :as h]
 
+            [app.utils.date :as date-utils]
+
             [app.admin.daily.crud.form :as form]))
 
 ;;--- Init events ---
@@ -23,7 +25,7 @@
 (reg-event-fx
  ::init-blank-form
  (fn [_ [_ categories]]
-   {:dispatch [:zf/init form/form-path (form/form-schema categories) {:date (js/Date.)}]}))
+   {:dispatch [:zf/init form/form-path (form/form-schema categories) {:date (date-utils/to-iso-date (js/Date.))}]}))
 
 (reg-event-fx
  :admin-daily-update
