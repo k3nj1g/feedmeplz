@@ -29,23 +29,31 @@
    (get-in db [:page :cart])))
 
 (reg-sub
- ::cart-total
+ ::menu-items
  :<- [::daily-menu]
+ (fn [{:keys [items]} _]
+   (->> items
+        (flatten)
+        (filter map?))))
+
+(reg-sub
+ ::cart-total
+ :<- [::menu-items]
  :<- [::cart]
- (fn [[daily-menu cart] _]
+ (fn [[menu-items cart] _]
    (reduce-kv (fn [total id quantity]
-                (let [item (first (filter #(= (:id %) id) (flatten (vals daily-menu))))]
+                (let [item (first (filter #(= (:id %) id) menu-items))]
                   (+ total (* (:price item) quantity))))
               0
               cart)))
 
 (reg-sub
  ::items-in-cart
- :<- [::daily-menu]
+ :<- [::menu-items]
  :<- [::cart]
- (fn [[daily-menu cart]]
+ (fn [[menu-items cart]]
    (map (fn [[id quantity]]
-          (let [item (first (filter #(= (:id %) id) (flatten (vals daily-menu))))]
+          (let [item (first (filter #(= (:id %) id) menu-items))]
             (assoc item :quantity quantity)))
         cart)))
 
