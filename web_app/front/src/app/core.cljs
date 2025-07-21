@@ -6,25 +6,31 @@
             [zenform.core]
 
             [app.auth.events :as auth]
+            [app.telegram.core :as telegram]
             
             [app.config :as config]
             [app.events :as events]
             [app.view   :as view]
             [app.routes :as routes]))
 
-(defn dev-setup []
+(defn dev-setup
+  []
   (when config/debug?
     (println "dev mode")))
 
-(defn ^:dev/after-load mount-root []
+(defn ^:dev/after-load mount-root
+  []
   (rf/clear-subscription-cache!)
   (let [root-el (gdom/getElement "app")]
     (rdom/unmount-component-at-node root-el)
     (rdom/render [view/layout-view] root-el)))
 
-(defn ^:export init []
+
+(defn ^:export init
+  []
   (routes/start!)
   (rf/dispatch-sync [::events/initialize-db])
+  (telegram/init-telegram-app!)
   (rf/dispatch-sync [::auth/init])
   (dev-setup)
   (mount-root))

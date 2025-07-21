@@ -206,7 +206,7 @@
                 :muuntaja   m/instance
                 :middleware [swagger/swagger-feature
                              [cors-middleware
-                              :access-control-allow-origin       (re-pattern (System/getenv "FRONTEND_URL"))
+                              :access-control-allow-origin       (re-pattern (str (System/getenv "FRONTEND_URL") "|https://soft-rats-film.loca.lt"))
                               :access-control-allow-methods      [:get :post :patch :put :delete]
                               :access-control-allow-credentials "true"]
                              cookies-middleware

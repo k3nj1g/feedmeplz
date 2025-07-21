@@ -2,5 +2,10 @@
   (:require [app.config :as config]))
 
 (def default-db
-  {:config {:api-url config/api-url}
-   :name   "Feed Me!"})
+  {:active-page :current-menu
+   :popup-menu  #{}
+   :dialogs     {}
+   :telegram    {:init-data nil
+                :user      nil
+                :platform  nil}
+   :config      {:api-url config/api-url}})

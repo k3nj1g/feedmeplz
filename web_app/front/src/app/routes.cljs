@@ -4,16 +4,24 @@
             [pushy.core    :as pushy]
             [re-frame.core :as rf]
 
-            [app.events :as events]))
+            [app.events :as events]
+            [app.telegram.menu :as telegram-menu]
+            [app.telegram.cart :as telegram-cart]))
 
 (defmulti pages identity)
 (defmethod pages :default [] (fn [] [:div "Страница не существует по заданному пути."]))
+
+;; Telegram-specific pages
+(defmethod pages :telegram-menu [] telegram-menu/menu)
+(defmethod pages :telegram-cart [] telegram-cart/cart)
 
 ;; Route definitions
 (def routes
   "Application routes"
   ["/" {""       :current-menu
         "login"  :login
+        "telegram/" {"menu" :telegram-menu
+                    "cart" :telegram-cart}
         "admin/" {"catalog"     :admin-catalog
                   "daily-list"  :admin-daily-list
                   "daily-crud/" {""    :admin-daily-create
@@ -34,10 +42,11 @@
 (defn dispatch
   "Dispatch a route to the appropriate handler"
   [route]
-  (rf/dispatch [::events/set-active-page
-                {:page         (:handler route)
-                 :route-params (:route-params route)}])
-  (rf/dispatch [:db/set :route-params (:route-params route)]))
+  (let [handler (:handler route)]
+    (rf/dispatch [::events/set-active-page
+                  {:page         handler
+                   :route-params (:route-params route)}])
+    (rf/dispatch [:db/set :route-params (:route-params route)])))
 
 (def history
   "Pushy history object for handling browser history"

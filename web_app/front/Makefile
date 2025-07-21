@@ -7,3 +7,6 @@ endif
 
 dev:
 	npm run dev
+
+dev-https:
+	./scripts/dev.sh

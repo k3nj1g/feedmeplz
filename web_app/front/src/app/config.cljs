@@ -6,6 +6,10 @@
 (goog-define API_URL "") 
 
 (def config
-  {:api-url API_URL})
+  {:dev? true
+   :telegram-bot-token "8106384722:AAFXPENtZbnEfsMtT1_VgeTDidv7IAh-FW8"
+   :telegram-bot-username "feedmeplz_test_bot"
+   :telegram-mini-app-username "feedmeplz"
+   :api-url API_URL})
 
 (def api-url (:api-url config))
