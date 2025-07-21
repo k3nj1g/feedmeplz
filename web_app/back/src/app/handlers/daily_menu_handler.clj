@@ -42,14 +42,34 @@
     (let [id   (get-in request [:path-params :id])
           menu (crud/read (daily-menu/model datasource) id)]
       (if menu
-        (response/response menu)
-        (response/not-found "Not found")))))
+        (response/response menu) (response/not-found "Not found")))))
 
 (defn list-handler
   [datasource]
   (fn [request]
-    (let [menus (crud/list-all (daily-menu/model datasource) (:params request))]
-      (response/response menus))))
+    (let [params     (:params request)
+          page       (Integer/parseInt (:page params "1"))
+          limit      (Integer/parseInt (:limit params "10"))
+          offset     (* (dec page) limit)
+
+          ;; Получаем общее количество меню
+          total-count (crud/count-all (daily-menu/model datasource) {})
+
+          ;; Получаем меню с пагинацией
+          menus       (crud/list-paginated (daily-menu/model datasource)
+                                           (merge params {:limit limit :offset offset}))
+
+          ;; Вычисляем метаданные пагинации
+          total-pages (Math/ceil (/ total-count limit))
+
+          result      {:data       menus
+                       :pagination {:current-page page
+                                    :total-pages  total-pages
+                                    :total-items  total-count
+                                    :limit        limit
+                                    :has-next     (< page total-pages)
+                                    :has-prev     (> page 1)}}]
+      (response/response result))))
 
 (defn update-handler
   [datasource]

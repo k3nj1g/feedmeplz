@@ -6,4 +6,6 @@
   (read [this id])
   (update! [this id data])
   (delete! [this id])
-  (list-all [this params]))
+  (list-all [this params])
+  (list-paginated [this params])
+  (count-all [this params]))

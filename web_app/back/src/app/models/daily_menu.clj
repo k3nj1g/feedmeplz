@@ -31,10 +31,10 @@
                  :from     [[table-name :dm]]
                  :join     [[:daily_menu_items :dmi]
                             [:= :dm.id :dmi.daily_menu_id]
-                 
+
                             [:dishes :d]
                             [:= :d.id :dmi.dish_id]
-                 
+
                             [:categories :c]
                             [:= :d.category_id :c.id]]
                  :where     [:= :dm.id [:cast id :integer]]
@@ -55,7 +55,7 @@
                  :where       [:= :id [:cast id :integer]]
                  :returning   [:*]}]
       (first (execute-query datasource-or-tx query))))
-  
+
   (list-all [_ {:keys [date] :as _params}]
     (let [query (cond-> {:select   [:dm.*
                                     [[:jsonb_agg
@@ -85,7 +85,48 @@
       (->> (execute-query datasource-or-tx query)
            (mapv (fn [row]
                    {:menu       (dissoc row :menu_items)
-                    :menu-items (sort-by (juxt :category_id :name) (:menu_items row))}))))))
+                    :menu-items (sort-by (juxt :category_id :name) (:menu_items row))})))))
+
+  (list-paginated
+    [_ {:keys [date limit offset]}]
+    (let [query  (cond-> {:select   [:dm.*
+                                     [[:jsonb_agg
+                                       [:||
+                                        [:to_jsonb :dmi.*]
+                                        [:to_jsonb :d.*]
+                                        [:jsonb_build_object
+                                         "name"        :d.name
+                                         "category_id" :c.id
+                                         "weight"      :d.weight
+                                         "kcals"       :d.kcals
+                                         "description" :d.description]]] :menu_items]]
+                          :from     [[table-name :dm]]
+                          :join     [[:daily_menu_items :dmi]
+                                     [:= :dm.id :dmi.daily_menu_id]
+
+                                     [:dishes :d]
+                                     [:= :d.id :dmi.dish_id]
+
+                                     [:categories :c]
+                                     [:= :d.category_id :c.id]]
+                          :where    (cond-> [:and true]
+                                      date
+                                      (conj [:= :date [:cast date :date]]))
+                          :order-by [[:date :desc]]
+                          :group-by [:dm.id]
+                          :limit    limit
+                          :offset   offset})]
+      (->> (execute-query datasource-or-tx query)
+           (mapv (fn [row]
+                   {:menu       (dissoc row :menu_items)
+                    :menu-items (sort-by (juxt :category_id :name) (:menu_items row))})))))
+
+  (count-all [_ {:keys [date]}]
+    (let [query (cond-> {:select [:%count.*]
+                         :from   [[table-name :dm]]}
+                  date
+                  (assoc :where [:= :date [:cast date :date]]))]
+      (:count (first (execute-query datasource-or-tx query))))))
 
 (defn model [datasource]
   (->DailyMenuModel :daily_menus DailyMenuSchema datasource))
