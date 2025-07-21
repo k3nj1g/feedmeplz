@@ -3,6 +3,8 @@
 
             [app.admin.daily.list.controller :as ctrl]))
 
+(def change-page ::ctrl/change-page)
+
 (reg-sub
  ::daily-menus
  :<- [:http/response ::ctrl/daily-menus]
@@ -14,3 +16,13 @@
  :<- [:http/response ::ctrl/categories]
  (fn [categories _]
    categories))
+
+(reg-sub
+ ::pagination
+ (fn [db _]
+   (get-in db [:page :pagination])))
+
+(reg-sub
+ ::current-page
+ (fn [db _]
+   (get-in db [:page :current-page] 1)))

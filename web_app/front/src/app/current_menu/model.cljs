@@ -11,17 +11,18 @@
  :<- [:http/response ::ctrl/daily-menus]
  :<- [:http/response ::ctrl/categories]
  :<- [:zf/get-value form/form-path [:search]]
- (fn [[[daily-menus] categories search] _]
-   {:menu  (:menu daily-menus)
-    :items (->> daily-menus :menu-items
-                (group-by :category_id)
-                (reduce-kv
-                 (fn [acc k v]
-                   (conj acc
-                         [(some #(when (= (:id %) k) (:name %)) categories)
-                          (cond->> v
-                            search
-                            (filter #(h/match-search-term? (:name %) search)))])) []))}))
+ (fn [[daily-menus categories search] _]
+   (let [data (-> daily-menus :data (first))]
+     {:menu  (:menu data)
+      :items (->> data :menu-items
+                  (group-by :category_id)
+                  (reduce-kv
+                   (fn [acc k v]
+                     (conj acc
+                           [(some #(when (= (:id %) k) (:name %)) categories)
+                            (cond->> v
+                              search
+                              (filter #(h/match-search-term? (:name %) search)))])) []))})))
 
 (reg-sub
  ::cart
