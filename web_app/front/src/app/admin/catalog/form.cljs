@@ -16,7 +16,7 @@
                           :label "Категория"}
             :kcals       {:type  :number
                           :label "Калории"}
-            :weight      {:type  :number
+            :weight      {:type  :string
                           :label "Вес"}}})
 
 (def form-path-search [:form :current-menu :search])

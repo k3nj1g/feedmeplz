@@ -1,0 +1,1 @@
+ALTER TABLE dishes ALTER COLUMN weight TYPE TEXT;

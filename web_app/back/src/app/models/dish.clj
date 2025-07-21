@@ -8,15 +8,19 @@
   [:map
    [:name [:string {:min 1, :max 100}]]
    [:description {:optional true} [:string]]
+   [:kcals {:optional true} [:int {:min 0}]]
+   [:weight {:optional true} [:string]]
    [:price [:double {:min 0}]]
    [:category_id [:int]]])
 
 (defn prepare-data
   [data]
-  (-> data
-      (update :price h/as-double)
-      (update :kcals h/as-int)
-      (update :weight h/as-int)))
+  (let [processed (-> data
+                      (update :price h/as-double)
+                      (update :kcals h/as-int))]
+    (->> processed
+         (remove (fn [[k v]] (nil? v)))
+         (into {}))))
 
 (defrecord DishModel [datasource]
   CRUD

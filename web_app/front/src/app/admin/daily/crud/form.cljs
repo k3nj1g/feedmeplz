@@ -32,5 +32,5 @@
                           :validators {:required {:message "Укажите цену"}}}
             :kcals       {:type  :number
                           :label "Калории"}
-            :weight      {:type  :number
+            :weight      {:type  :string
                           :label "Вес"}}})
