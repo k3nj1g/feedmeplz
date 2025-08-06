@@ -110,7 +110,7 @@
 (reg-event-fx
  ::handle-existing-menu
  (fn [_ [_  {:keys [success data]} existing-menu]]
-   (if (seq existing-menu)
+   (if (seq (:data existing-menu))
      {:toast {:message "Меню на эту дату уже существует"
               :type    :error}}
      {:dispatch (h/success-event-to-dispatch success data)})))

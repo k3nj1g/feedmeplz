@@ -3,7 +3,7 @@
             [re-frame.core :refer [dispatch subscribe]]
             [tick.core     :as t]
 
-            ["lucide-react" :refer [Calendar ChevronDown Trash2 Edit Plus Utensils]]
+            ["lucide-react" :refer [Calendar ChevronDown Trash2 Edit Plus Utensils ChevronLeft ChevronRight]]
 
             [app.components.base :refer [button heading]]
             [app.components.card-parts :refer [card]]
@@ -48,6 +48,41 @@
         [:span (:name item)]
         [:span.text-gray-600 (str (:price item) " ₽")]]])]])
 
+(defn pagination
+  []
+  (let [pagination   @(subscribe [::model/pagination])
+        current-page @(subscribe [::model/current-page])]
+    (when (and pagination (> (:total-pages pagination) 1))
+      [:div.flex.justify-center.items-center.gap-2.mt-6
+       ;; Previous button
+       [:button.p-2.rounded-lg.border.border-gray-300.hover:bg-gray-50.disabled:opacity-50.disabled:cursor-not-allowed
+        {:disabled (= current-page 1)
+         :on-click #(when (> current-page 1)
+                      (dispatch [model/change-page (dec current-page)]))}
+        [:> ChevronLeft {:class "w-4 h-4"}]]
+       
+       ;; Page numbers
+       (for [page (range 1 (inc (:total-pages pagination)))]
+         ^{:key page}
+         [:button.px-3.py-2.rounded-lg.text-sm.font-medium
+          {:class    (if (= current-page page)
+                       "bg-blue-500 text-white"
+                       "text-gray-700 hover:bg-gray-100")
+           :on-click #(dispatch [model/change-page page])}
+          page])
+       
+       ;; Next button
+       [:button.p-2.rounded-lg.border.border-gray-300.hover:bg-gray-50.disabled:opacity-50.disabled:cursor-not-allowed
+        {:disabled (= current-page (:total-pages pagination))
+         :on-click #(when (< current-page (:total-pages pagination))
+                      (dispatch [model/change-page (inc current-page)]))}
+        [:> ChevronRight {:class "w-4 h-4"}]]
+       
+       ;; Page info
+       [:div.ml-4.text-sm.text-gray-500
+        (str "Страница " current-page " из " (:total-pages pagination) 
+             " (" (:total-items pagination) " всего)")]])))
+
 (defn daily-menu-view
   [categories {:keys [menu menu-items]}]
   (r/with-let [expanded-menu-id (r/atom nil)]
@@ -86,16 +121,19 @@
 
 (defn daily-menus-view
   []
-  (let [daily-menus @(subscribe [::model/daily-menus])
+  (let [{daily-menus :data} @(subscribe [::model/daily-menus])
         categories  @(subscribe [::model/categories])]
-    [:div.flex.flex-col.gap-4
-     (if (seq daily-menus)
-       (for [daily-menu daily-menus]
-         ^{:key (get-in daily-menu [:menu :id])}
-         [daily-menu-view categories daily-menu])
-       [empty-state])]))
+    [:div
+     [:div.flex.flex-col.gap-4
+      (if (seq daily-menus)
+        (for [daily-menu daily-menus]
+          ^{:key (get-in daily-menu [:menu :id])}
+          [daily-menu-view categories daily-menu])
+        [empty-state])]
+     [pagination]]))
 
-(defn daily-menu-list []
+(defn daily-menu-list
+  []
   [:<>
    [header]
    [daily-menus-view]])
