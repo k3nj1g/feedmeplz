@@ -25,7 +25,8 @@
     {:on-click #(dispatch [::controller/add-to-cart item])}
     [:> Plus {:class "h-4 w-4"}]]])
 
-#_(defn cart-content []
+(defn cart-content
+  []
   (let [items-in-cart @(subscribe [::model/items-in-cart])
         cart-total @(subscribe [::model/cart-total])]
     [:div.mt-4
@@ -54,8 +55,7 @@
   (let [cart-total @(subscribe [::model/cart-total])]
     [:div.flex.justify-between.mb-6
      [:div.flex.items-center.gap-4
-      [heading
-       "Меню на"]
+      [heading "Меню на"]
       [:div.flex.items-center.text-base.border.rounded-lg.border-gray-200.px-2.gap-1.h-8
        [:> Calendar {:class "w-4 h-4"}]
        [:span.font-semibold (date-utils/->ru-verbose date)]]]
@@ -93,34 +93,51 @@
 (defn menu-category
   [category menu-items]
   [card {:class "mb-6"}
-   [card-header
-    category]
+   [card-header category]
    [card-content {:class "p-4"}
     [:div.grid.gap-2
      (for [item menu-items]
        ^{:key (:id item)}
        [menu-item item])]]])
 
-(defn container-view [container-id items]
-  [:div.flex-1.border-2.border-dashed.border-gray-300.rounded-lg.p-4
-   {:on-drag-over (fn [e] (.preventDefault e))
-    :on-drop (fn [e]
-               (.preventDefault e)
-               (let [data (.getData (.dataTransfer e) "text/plain")
-                     {:keys [id quantity sourceContainerId]} (js/JSON.parse data)]
-                 (if (and sourceContainerId (not= (str container-id) (str sourceContainerId)))
-                   (dispatch [::controller/move-item-between-containers (js/parseInt sourceContainerId) container-id id quantity])
-                   (dispatch [::controller/add-item-to-container container-id id quantity]))))}
+(defn container-view
+  [container-id items]
+  [:div.flex-1.border-2.border-dashed.border-gray-300.rounded-lg.p-4.min-h-32.transition-colors
+   {:on-drag-over  (fn [e]
+                     (.preventDefault e)
+                     (set! (.-className (.-currentTarget e))
+                           "flex-1 border-2 border-dashed border-blue-500 bg-blue-50 rounded-lg p-4 min-h-32 transition-colors"))
+    :on-drag-leave (fn [e]
+                     (set! (.-className (.-currentTarget e))
+                           "flex-1 border-2 border-dashed border-gray-300 rounded-lg p-4 min-h-32 transition-colors"))
+    :on-drop       (fn [e]
+                     (.preventDefault e)
+                     (set! (.-className (.-currentTarget e))
+                           "flex-1 border-2 border-dashed border-gray-300 rounded-lg p-4 min-h-32 transition-colors")
+                     (try
+                       (let [data                (.getData (.-dataTransfer e) "text/plain")
+                             parsed              (js/JSON.parse data)
+                             id                  (.-id parsed)
+                             quantity            (.-quantity parsed)
+                             source-container-id (.-sourceContainerId parsed)]
+                         (if (and source-container-id (not= (str container-id) (str source-container-id)))
+                           (dispatch [::controller/move-item-between-containers
+                                      (js/parseInt source-container-id) container-id id quantity])
+                           (dispatch [::controller/add-item-to-container container-id id quantity])))
+                       (catch js/Error e
+                         (js/console.error "Error parsing drag data:" e))))}
    [:h4.text-md.font-medium.mb-2 (str "Контейнер " container-id)]
    [:div.space-y-2
     (for [{:keys [item quantity]} items]
       ^{:key (:id item)}
       [:div.flex.justify-between.items-center.p-2.bg-white.rounded.shadow-sm.cursor-grab
-       {:draggable "true"
-        :on-drag-start #(let [data (js/JSON.stringify {:id (:id item)
-                                                      :quantity quantity
-                                                      :sourceContainerId container-id})]
-                          (.dataTransfer % :setData "text/plain" data))}
+       {:draggable     true
+        :on-drag-start (fn [e]
+                         (let [data (js/JSON.stringify
+                                     (clj->js {:id                (:id item)
+                                               :quantity          quantity
+                                               :sourceContainerId container-id}))]
+                           (.setData (.-dataTransfer e) "text/plain" data)))}
        [:span (:name item)]
        [:span.text-sm.text-gray-500 (str "x" quantity)]])]])
 
@@ -131,34 +148,50 @@
         containers @(subscribe [::model/containers])]
     (when (pos? cart-total)
       [card
-       [card-header
-        "Выберите контейнеры для упаковки"]
+       [card-header "Выберите контейнеры для упаковки"]
        [card-content
         [:div.space-y-4
          ;; Draggable items list
-         [:div.border.p-4.rounded-lg.bg-gray-100
+         [:div.border.p-4.rounded-lg.bg-gray-50
           [:h4.text-md.font-medium.mb-2 "Блюда в заказе"]
           [:div.space-y-2
            (for [item items-in-cart]
              ^{:key (:id item)}
              [:div.flex.justify-between.items-center.p-2.bg-white.rounded.shadow-sm.cursor-grab
-              {:draggable "true"
-               :on-drag-start #(let [data (js/JSON.stringify {:id (:id item) :quantity (:quantity item)})]
-                                 (.dataTransfer % :setData "text/plain" data))}
+              {:draggable true
+               :on-drag-start (fn [e]
+                                (let [data (js/JSON.stringify
+                                            (clj->js {:id (:id item) :quantity (:quantity item)}))]
+                                  (.setData (.-dataTransfer e) "text/plain" data)))}
               [:span (:name item)]
               [:span.text-sm.text-gray-500 (str "x" (:quantity item))]])]]
 
          ;; Container drop zones
-         [:div.flex.gap-4
+         [:div.flex.gap-4.flex-wrap
           (if (empty? containers)
-            [:div.flex-1.border-2.border-dashed.border-gray-300.rounded-lg.p-4.text-center
-             {:on-drag-over (fn [e] (.preventDefault e))
+            [:div.flex-1.border-2.border-dashed.border-gray-300.rounded-lg.p-8.text-center.min-h-32.transition-colors
+             {:on-drag-over (fn [e]
+                              (.preventDefault e)
+                              (set! (.-className (.-currentTarget e))
+                                    "flex-1 border-2 border-dashed border-blue-500 bg-blue-50 rounded-lg p-8 text-center min-h-32 transition-colors"))
+              :on-drag-leave (fn [e]
+                               (set! (.-className (.-currentTarget e))
+                                     "flex-1 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center min-h-32 transition-colors"))
               :on-drop (fn [e]
                          (.preventDefault e)
-                         (let [data (.getData (.dataTransfer e) "text/plain")
-                               {:keys [id quantity]} (js/JSON.parse data)]
-                           (dispatch [::controller/add-item-to-container 1 id quantity])))}
-             "Перетащите блюда сюда, чтобы создать первый контейнер"]
+                         (set! (.-className (.-currentTarget e))
+                               "flex-1 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center min-h-32 transition-colors")
+                         (try
+                           (let [data (.getData (.-dataTransfer e) "text/plain")
+                                 parsed (js/JSON.parse data)
+                                 id (.-id parsed)
+                                 quantity (.-quantity parsed)]
+                             (dispatch [::controller/add-item-to-container 1 id quantity]))
+                           (catch js/Error e
+                             (js/console.error "Error parsing drag data:" e))))}
+             [:div.text-gray-500
+              [:p "Перетащите блюда сюда,"]
+              [:p "чтобы создать первый контейнер"]]]
             (for [[container-id container-items] containers]
               ^{:key container-id}
               [container-view container-id container-items]))]
@@ -169,8 +202,7 @@
            :on-click #(dispatch [::controller/add-new-container])}
           "Добавить новый контейнер"]]]
 
-       [card-header
-        "Сводка заказа"]
+       [card-header "Сводка заказа"]
        [card-content
         ;; Displaying items within containers in the summary
         (if (empty? containers)
@@ -189,7 +221,7 @@
                   [:span (str (* (:price item) quantity) " ₽")]])]])])
 
         ;; Total summary
-        [:div.space-y-2
+        [:div.space-y-2.mt-4
          (for [item items-in-cart]
            ^{:key (:id item)}
            [:div.flex.justify-between.text-sm
@@ -198,39 +230,37 @@
          [:div.border-t.pt-2.mt-2.flex.justify-between.font-medium
           [:span "Итого:"]
           [:span (str cart-total " ₽")]]
+         [:div.flex.justify-between.font-medium.mb-2
+          [:span "Всего контейнеров:"]
+          [:span (count containers)]]
          [button
           {:type     (if copied? "success" "primary")
            :class    "w-full"
            :on-click on-click}
-          [:div.flex.justify-between.font-medium
-           [:span "Всего контейнеров:"]
-           [:span (count containers)]]
-          [button
-           {}
-           (if copied?
-             [:<>
-              [:> Check {:class "h-4 w-4 mr-2"}]
-              "Скопировано!"]
-             [:<>
-              [:> Copy {:class "h-4 w-4 mr-2"}]
-              "Копировать заказ"])]]]]])))
+          (if copied?
+            [:<>
+             [:> Check {:class "h-4 w-4 mr-2"}]
+             "Скопировано!"]
+            [:<>
+             [:> Copy {:class "h-4 w-4 mr-2"}]
+             "Копировать заказ"])]]]])))
 
-(defn empty-state
-  []
-  [:div.flex.flex-col.items-center.justify-center.p-8.bg-gray-50.rounded-lg.border-2.border-dashed.border-gray-200
-   [:> ShoppingCart {:class "w-12 h-12 text-gray-400 mb-4"}]
-   [:h3.text-lg.font-medium.text-gray-900.mb-1 "Меню не найдено"]])
+  (defn empty-state
+    []
+    [:div.flex.flex-col.items-center.justify-center.p-8.bg-gray-50.rounded-lg.border-2.border-dashed.border-gray-200
+     [:> ShoppingCart {:class "w-12 h-12 text-gray-400 mb-4"}]
+     [:h3.text-lg.font-medium.text-gray-900.mb-1 "Меню не найдено"]])
 
-(defn current-menu-view
-  []
-  (let [{:keys [menu items]} @(subscribe [::model/daily-menu])] 
-    (if menu
-      [:<>
-       [header menu]
-       (for [[category-name menu-items] items]
-         ^{:key category-name}
-         [menu-category category-name menu-items])
-       [order-summary]]
-      [empty-state])))
+  (defn current-menu-view
+    []
+    (let [{:keys [menu items]} @(subscribe [::model/daily-menu])]
+      (if menu
+        [:<>
+         [header menu]
+         (for [[category-name menu-items] items]
+           ^{:key category-name}
+           [menu-category category-name menu-items])
+         [order-summary]]
+        [empty-state])))
 
-(defmethod routes/pages :current-menu [] current-menu-view)
+  (defmethod routes/pages :current-menu [] current-menu-view)
