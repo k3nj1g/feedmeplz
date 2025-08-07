@@ -66,3 +66,8 @@
    {:cart-total    cart-total
     :items-in-cart items-in-cart
     :on-click      (h/action [::ctrl/copy-order-to-clipboard cart-total items-in-cart])}))
+
+(reg-sub
+ ::containers
+ (fn [db _]
+   (get-in db [:page :containers] {})))
