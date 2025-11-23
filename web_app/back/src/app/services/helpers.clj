@@ -16,3 +16,8 @@
   "Create not found error"
   []
   (error "Resource not found" 404))
+
+(defn validation-error
+  "Create validation error"
+  [message]
+  (error message 422))
