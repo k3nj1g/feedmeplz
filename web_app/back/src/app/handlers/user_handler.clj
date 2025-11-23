@@ -1,31 +1,72 @@
 (ns app.handlers.user-handler
-  (:require [buddy.hashers      :as hashers]
-            [ring.util.response :as response]
+  "User HTTP handlers - transforms HTTP requests to service calls
+   Delegates business logic to app.services.user-service
+   Uses app.handlers.helpers for response formatting"
+  (:require [app.handlers.helpers :as helpers]
+            
+            [app.services.user-service :as user-service]))
 
-            [app.server.db :refer [execute-query]]))
+;; ============================================================================
+;; Authentication Handlers
+;; ============================================================================
 
-(defn find-by-username
-  [datasource username]
-  (execute-query datasource {:select [:*]
-                             :from   [:users]
-                             :where  [:= :username username]}))
+(defn get-self-handler
+  "Get current user info from JWT token"
+  [db]
+  (fn [request]
+    (if-let [user-id (helpers/require-auth request)]
+      (helpers/service-response 
+       (user-service/get-current-user db user-id))
+      (helpers/unauthorized-response))))
+
+(defn change-password-handler
+  "Change current user's password"
+  [db]
+  (fn [request]
+    (if-let [user-id (helpers/require-auth request)]
+      (let [{:keys [old_password new_password]} (helpers/get-body-params request)]
+        (helpers/service-response
+          (user-service/change-password db user-id old_password new_password)))
+      (helpers/unauthorized-response))))
+
+;; ============================================================================
+;; User Management Handlers
+;; ============================================================================
+
+(defn activate-handler
+  "Activate user account"
+  [db]
+  (fn [request]
+    (let [id (helpers/get-path-param request :id)]
+      (helpers/service-response (user-service/activate-user db id)))))
+
+(defn deactivate-handler
+  "Deactivate user account"
+  [db]
+  (fn [request]
+    (let [id (helpers/get-path-param request :id)]
+      (helpers/service-response (user-service/deactivate-user db id)))))
+
+(defn make-admin-handler
+  "Grant admin privileges"
+  [db]
+  (fn [request]
+    (let [id (helpers/get-path-param request :id)]
+      (helpers/service-response (user-service/make-admin db id)))))
+
+(defn revoke-admin-handler
+  "Revoke admin privileges"
+  [db]
+  (fn [request]
+    (let [id (helpers/get-path-param request :id)]
+      (helpers/service-response (user-service/revoke-admin db id)))))
+
+;; ============================================================================
+;; Helper functions (used by auth middleware)
+;; ============================================================================
 
 (defn authenticate-user
-  [datasource {:keys [username password]}]
-  (when-let [user (first (find-by-username datasource username))]
-    (when (:valid (hashers/verify password (:password_hash user)))
-      (dissoc user :password_hash))))
-
-(defn get-self-user
-  [datasource]
-  (fn [request]
-    (if-let [user-id (get-in request [:identity :user])]
-      (if-let [user (first (execute-query datasource
-                                          {:select [:id :username :email :telegram_id :is_active :is_staff :is_admin]
-                                           :from   [:users]
-                                           :where  [:= :id user-id]}))]
-        (response/response user)
-        (-> (response/response {:error "User not found"})
-            (response/status 404)))
-      (-> (response/response {:error "Unauthorized"})
-          (response/status 401)))))
+  "Authenticate user with username and password.
+   Used by login handler in auth.clj"
+  [db credentials]
+  (user-service/authenticate-user db credentials))
