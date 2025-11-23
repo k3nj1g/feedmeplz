@@ -1,113 +1,72 @@
 (ns app.handlers.daily-menu-handler
-  (:require [java-time.api      :as jt]
-            [ring.util.response :as response]
+  "Daily Menu HTTP handlers - transforms HTTP requests to service calls
+   Delegates business logic to app.services.daily-menu-service"
+  (:require [app.services.daily-menu-service :as daily-menu-service]
+            [app.handlers.helpers :as helpers]))
 
-            [app.models.crud            :as crud]
-            [app.models.daily-menu      :as daily-menu]
-            [app.models.daily-menu-item :as daily-menu-item]
 
-            [app.helpers :as h]
+;; ============================================================================
+;; CRUD handlers
+;; ============================================================================
 
-            [app.server.db :refer [with-transaction]]))
-
-(defn prepare-data
-  [data]
-  (-> data
-      (update :price h/as-double)))
-
-(defn create-handler
-  [datasource]
-  (fn [{:keys [body-params]}]
-    (let [{:keys [date dishes] :or {date (jt/local-date)}} body-params]
-      (if (jt/before? (jt/local-date date) (jt/local-date))
-        (response/bad-request "Menu date cannot be earlier than the current date")
-        (try
-          (with-transaction [tx datasource]
-            (let [menu       (crud/create! (daily-menu/model tx) {:date (jt/local-date date)})
-                  menu-items (doall
-                              (map
-                               (fn [{:keys [price] dish-id :id}]
-                                 (crud/create! (daily-menu-item/model tx)
-                                               (prepare-data {:daily_menu_id (:id menu)
-                                                              :dish_id       dish-id
-                                                              :price         price})))
-                               dishes))]
-              (response/created "" {:menu menu :menu_items menu-items})))
-          (catch Exception e
-            (response/bad-request {:error (.getMessage e)})))))))
-
-(defn read-handler
-  [datasource]
+(defn get-all-menus
+  "Get all daily menus"
+  [db]
   (fn [request]
-    (let [id   (get-in request [:path-params :id])
-          menu (crud/read (daily-menu/model datasource) id)]
-      (if menu
-        (response/response menu) (response/not-found "Not found")))))
+    (let [params (:query-params request)]
+      (helpers/service-response
+        (daily-menu-service/get-all-menus db params)))))
 
-(defn list-handler
-  [datasource]
+(defn get-menu
+  "Get menu by id"
+  [db]
   (fn [request]
-    (let [params     (:params request)
-          page       (Integer/parseInt (:page params "1"))
-          limit      (Integer/parseInt (:limit params "10"))
-          offset     (* (dec page) limit)
+    (let [menu-id (helpers/get-path-param request :id)]
+      (helpers/service-response
+        (daily-menu-service/get-menu db menu-id)))))
 
-          ;; Получаем общее количество меню
-          total-count (crud/count-all (daily-menu/model datasource) {})
-
-          ;; Получаем меню с пагинацией
-          menus       (crud/list-paginated (daily-menu/model datasource)
-                                           (merge params {:limit limit :offset offset}))
-
-          ;; Вычисляем метаданные пагинации
-          total-pages (Math/ceil (/ total-count limit))
-
-          result      {:data       menus
-                       :pagination {:current-page page
-                                    :total-pages  total-pages
-                                    :total-items  total-count
-                                    :limit        limit
-                                    :has-next     (< page total-pages)
-                                    :has-prev     (> page 1)}}]
-      (response/response result))))
-
-(defn update-handler
-  [datasource]
-  (fn [{:keys [body-params] :as request}]
-    (let [{:keys [date dishes]} body-params]
-      (if (jt/before? (jt/local-date date) (jt/local-date))
-        (response/bad-request "Menu date cannot be earlier than the current date")
-        (try
-          (with-transaction [tx datasource]
-            (let [menu-id    (get-in request [:path-params :id])
-                  menu       (crud/read (daily-menu/model tx) menu-id)
-                  menu-items (doall
-                              (map
-                               (fn [{:keys [price item-id] dish-id :id}]
-                                 (let [data (prepare-data {:daily_menu_id (h/as-int menu-id)
-                                                           :dish_id       dish-id
-                                                           :price         price})]
-                                   (if item-id
-                                     (do 
-                                       (crud/update! (daily-menu/model tx) menu-id {:date (jt/local-date date)})
-                                       (crud/update! (daily-menu-item/model tx) item-id data))
-                                     (crud/create! (daily-menu-item/model tx) data))))
-                               dishes))
-                  to-delete   (->> menu :menu_items
-                                   (remove (fn [item]
-                                             (some (partial = (:dish_id item)) (map :id dishes)))))]
-              (doseq [item to-delete]
-                (crud/delete! (daily-menu-item/model tx) (:id item)))
-
-              (response/created "" {:menu (crud/read (daily-menu/model tx) menu-id) :menu_items menu-items})))
-          (catch Exception e
-            (response/bad-request {:error (.getMessage e)})))))))
-
-(defn delete-handler 
-  [datasource]
+(defn create-menu
+  "Create a new daily menu with items"
+  [db]
   (fn [request]
-    (let [id (get-in request [:path-params :id])
-          deleted-menu (crud/delete! (daily-menu/model datasource) id)]
-      (if deleted-menu
-        (response/response deleted-menu)
-        (response/not-found "Not found")))))
+    (let [data (helpers/get-body-params request)]
+      (helpers/service-response
+        (daily-menu-service/create-menu db data)))))
+
+(defn update-menu
+  "Update daily menu and its items"
+  [db]
+  (fn [request]
+    (let [menu-id (helpers/get-path-param request :id)
+          data (helpers/get-body-params request)]
+      (helpers/service-response
+        (daily-menu-service/update-menu db menu-id data)))))
+
+(defn delete-menu
+  "Delete daily menu by id"
+  [db]
+  (fn [request]
+    (let [menu-id (helpers/get-path-param request :id)]
+      (helpers/service-response
+        (daily-menu-service/delete-menu db menu-id)))))
+
+;; ============================================================================
+;; Menu item handlers
+;; ============================================================================
+
+(defn add-menu-item
+  "Add item to daily menu"
+  [db]
+  (fn [request]
+    (let [menu-id (helpers/get-path-param request :menu_id)
+          data (helpers/get-body-params request)]
+      (helpers/service-response
+        (daily-menu-service/add-menu-item db menu-id data)))))
+
+(defn remove-menu-item
+  "Remove item from daily menu"
+  [db]
+  (fn [request]
+    (let [item-id (helpers/get-path-param request :item_id)]
+      (helpers/service-response
+        (daily-menu-service/remove-menu-item db item-id)))))
