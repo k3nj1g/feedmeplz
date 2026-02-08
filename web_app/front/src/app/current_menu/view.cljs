@@ -102,19 +102,74 @@
 
 (defn order-summary
   []
-  (let [{:keys [cart-total items-in-cart on-click]} @(subscribe [::model/order-summary])
-        copied? @(subscribe [:db/get [:page :copied]])]
+  (let [{:keys [cart-total items-in-cart item-containers containers-mode on-click]} @(subscribe [::model/order-summary])
+        copied? @(subscribe [:db/get [:page :copied]])
+        items-by-container (->> items-in-cart
+                                (group-by #(get item-containers (:id %) 1))
+                                (sort-by key))]
     (when (pos? cart-total)
       [card
        [card-header
         "Сводка заказа"]
        [card-content
-        [:div.space-y-2
-         (for [item items-in-cart]
-           ^{:key (:id item)}
-           [:div.flex.justify-between.text-sm
-            [:span (:name item) " × " (:quantity item)]
-            (str (* (:price item) (:quantity item)) " ₽")])
+        [:div.space-y-4
+         [:div.flex.items-center.justify-between
+          [:div.text-sm.text-gray-500
+           "Распределите блюда по контейнерам — перетащите позиции."]
+          [button
+           {:type     (if containers-mode "secondary" "primary")
+            :class    "whitespace-nowrap"
+            :on-click #(dispatch [::controller/toggle-container-mode])}
+           (if containers-mode
+             "Скрыть распределение"
+             "Распределить по контейнерам")]]
+         (if containers-mode
+           [:div.grid.gap-4.lg:grid-cols-2
+            [:div
+             [:div.text-sm.font-medium.text-gray-700.mb-2 "Позиции"]
+             [:div.space-y-2
+              (for [item items-in-cart]
+                ^{:key (:id item)}
+                [:div.flex.items-center.justify-between.text-sm.bg-gray-50.border.rounded-lg.px-3.py-2
+                 {:draggable true
+                  :on-drag-start #(do
+                                    (.setData (.-dataTransfer %) "text/plain" (str (:id item)))
+                                    (.setData (.-dataTransfer %) "application/container-item" (str (:id item))))}
+                 [:span (:name item) " × " (:quantity item)]
+                 [:span.text-gray-500 (str (* (:price item) (:quantity item)) " ₽")]])]]
+            [:div
+             [:div.text-sm.font-medium.text-gray-700.mb-2 "Контейнеры"]
+             [:div.grid.gap-3.sm:grid-cols-2
+              (for [container-number (range 1 6)]
+                ^{:key container-number}
+                [:div.border.rounded-lg.p-3.bg-white.min-h-[110px]
+                 {:on-drag-over #(.preventDefault %)
+                  :on-drop #(let [item-id (js/Number (.getData (.-dataTransfer %) "application/container-item"))]
+                              (when (pos? item-id)
+                                (dispatch [::controller/set-item-container item-id container-number])))}
+                 [:div.flex.items-center.justify-between.mb-2
+                  [:span.font-medium (str "Контейнер " container-number)]
+                  [:span.text-xs.text-gray-400 "Drop"]]
+                 (if-let [container-items (seq (get (into {} items-by-container) container-number))]
+                   [:div.space-y-1
+                    (for [item container-items]
+                      ^{:key (:id item)}
+                      [:div.text-xs.text-gray-700.flex.justify-between
+                       [:span (:name item) " × " (:quantity item)]
+                       [:span (str (* (:price item) (:quantity item)) " ₽")]])]
+                   [:div.text-xs.text-gray-400 "Перетащите блюда сюда"])])]]]
+           [:div.space-y-2
+            (for [[container-number container-items] items-by-container]
+              ^{:key container-number}
+              [:div
+               [:div.text-xs.uppercase.tracking-wide.text-gray-400.mb-1
+                (str "Контейнер " container-number)]
+               [:div.space-y-1
+                (for [item container-items]
+                  ^{:key (:id item)}
+                  [:div.flex.justify-between.text-sm
+                   [:span (:name item) " × " (:quantity item)]
+                   (str (* (:price item) (:quantity item)) " ₽")])]])])
          [:div.border-t.pt-2.mt-2.flex.justify-between.font-medium
           [:span "Итого:"]
           [:span (str cart-total " ₽")]]
