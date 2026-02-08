@@ -41,6 +41,11 @@
  (fn [db [_ item-id container-number]]
    (assoc-in db [:page :item-containers item-id] container-number)))
 
+(reg-event-db
+ ::toggle-container-mode
+ (fn [db _]
+   (update-in db [:page :containers-mode] not)))
+
 (defn get-order-summary-text 
   [cart-total items-in-cart item-containers]
   (let [items-by-container (->> items-in-cart
