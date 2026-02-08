@@ -28,6 +28,7 @@
     :content   [:div.py-1
                 [admin-menu-item "Каталог блюд" :admin-catalog]
                 [admin-menu-item "Меню дня" :admin-daily-list]
+                [admin-menu-item "Импорт меню" :admin-daily-import]
                 #_[admin-menu-item "Пользователи" :admin-users]
                 #_[admin-menu-item "Роли" :admin-roles]]
     :placement :top}])

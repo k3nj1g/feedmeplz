@@ -21,15 +21,18 @@
 
 (defn text-input
   [form-path path & [{:keys [adornment props]}]]
-  (let [{:keys [label value validators errors] input-type :type} @(subscribe [:zf/node form-path path])
-        id (utils/make-id path)]
+  (let [{:keys [label value validators errors] input-type :type} 
+        @(subscribe [:zf/node form-path path])
+
+        id
+        (utils/make-id path)]
     [styled-text-field
      (cond-> (merge
-              {:id          id
-               :label       label
-               :value       value
-               :on-change   #(dispatch [:zf/set-value form-path path (utils/event-value %)])
-               :size        "small"}
+              {:id        id
+               :label     label
+               :value     value
+               :on-change #(dispatch [:zf/set-value form-path path (utils/event-value %)])
+               :size      "small"}
               props
               (case input-type
                 (:money :number) {:type "number"}

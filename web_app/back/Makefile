@@ -12,7 +12,7 @@ down:
 	docker-compose down
 
 dev:
-	clj -M:dev:repl/reloaded
+	clj -M:dev:1.12-storm:repl/reloaded
 
 psql:
 	docker-compose exec -e PGPASSWORD=${POSTGRES_PASSWORD} db psql -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB}

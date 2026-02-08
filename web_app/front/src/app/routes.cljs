@@ -14,10 +14,11 @@
   "Application routes"
   ["/" {""       :current-menu
         "login"  :login
-        "admin/" {"catalog"     :admin-catalog
-                  "daily-list"  :admin-daily-list
-                  "daily-crud/" {""    :admin-daily-create
-                                 [:id] :admin-daily-update}}}])
+        "admin/" {"catalog"       :admin-catalog
+                  "daily-list"    :admin-daily-list
+                  "daily-import"  :admin-daily-import
+                  "daily-crud/"   {""    :admin-daily-create
+                                   [:id] :admin-daily-update}}}])
 
 ;; URL parsing and generation
 (defn parse-url

@@ -9,11 +9,12 @@
             [reitit.ring.middleware.exception  :as exception]
             [reitit.ring.middleware.muuntaja   :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
+            [reitit.ring.middleware.multipart  :as multipart]
 
             [reitit.coercion       :as coercion]
             [reitit.coercion.malli :as coercion-malli]
 
-            [ring.middleware.cors           :refer  [wrap-cors]]
+            [ring.middleware.cors           :refer [wrap-cors]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.cookies        :refer [wrap-cookies]]
 
@@ -85,7 +86,7 @@
       {:get {:summary "Получение блюд по категории"
              :handler (category-handler/dishes-by-category db)}}]]
 
-    ["dishes"
+    ["/dishes"
      {:swagger {:tags ["Dishes"]}}
      [""
       {:get {:summary "Получение списка всех блюд"
@@ -96,13 +97,13 @@
      ["/category/:category_id"
       {:get {:summary "Получение блюд по категории"
              :handler (dish-handler/get-dishes-by-category db)}}]
-     ["/search"
+     ["/search/"
       {:get {:summary "Поиск блюд по названию"
              :handler (dish-handler/search-dishes db)}}]
-     ["/price-range"
+     ["/price-range/"
       {:get {:summary "Поиск блюд по диапазону цены"
              :handler (dish-handler/get-dishes-in-price-range db)}}]
-     ["/with-category"
+     ["/with-category/"
       {:get {:summary "Получение блюд с информацией о категории"
              :handler (dish-handler/get-dishes-with-category db)}}]]
 
@@ -119,10 +120,10 @@
      [""
       {:get {:summary "Получение списка заказов"
              :handler (order-handler/get-all-orders db)}}]
-     ["/pending"
+     ["/pending/"
       {:get {:summary "Получение всех активных заказов"
              :handler (order-handler/get-pending-orders db)}}]
-     ["/completed"
+     ["/completed/"
       {:get {:summary "Получение завершенных заказов"
              :handler (order-handler/get-completed-orders db)}}]
      ["/user/:user_id"
@@ -163,11 +164,11 @@
      [""
       {:post {:summary "Создание нового ежедневного меню"
               :handler (daily-menu-handler/create-menu db)}}]
-     #_["/import/validate"
-        {:post {:summary "Валидация импорта меню из Excel файла"
+     ["/import/validate"
+        {:post {:summary    "Валидация импорта меню из Excel файла"
                 :parameters {:multipart [:map [:file any?]]}
-                :handler (daily-menu-handler/validate-import-handler db)}}]
-     #_["/import/execute"
+                :handler    (daily-menu-handler/validate-import-handler db)}}]
+     ["/import/execute"
         {:post {:summary "Выполнение импорта меню"
                 :parameters {:body [:map
                                     [:validation-result [:map
@@ -200,10 +201,10 @@
                  :handler (order-handler/get-all-orders db)}
        :post    {:summary "Создание нового заказа"
                  :handler (order-handler/create-order db)}}]
-     ["/with-details"
+     ["/with-details/"
       {:get {:summary "Получение заказов с деталями пользователя и блюда"
              :handler (order-handler/get-orders-with-details db)}}]
-     ["/status/:status"
+     ["/status/:status/"
       {:get {:summary "Получение заказов по статусу"
              :handler (order-handler/get-orders-by-status db)}}]
      ["/:id"
@@ -231,7 +232,12 @@
 (def cors-middleware
   {:name    ::cors
    :compile (fn [_ _] {})
-   :wrap    wrap-cors})
+   :wrap    (fn [handler]
+              (wrap-cors handler
+                         :access-control-allow-origin       [(re-pattern (System/getenv "FRONTEND_URL"))]
+                         :access-control-allow-methods      [:get :post :patch :put :delete :options]
+                         :access-control-allow-headers      ["Content-Type" "Authorization"]
+                         :access-control-allow-credentials  true))})
 
 (def cookies-middleware
   {:name    ::cookies
@@ -246,12 +252,10 @@
                 :exception  pretty/exception
                 :muuntaja   m/instance
                 :middleware [swagger/swagger-feature
-                             [cors-middleware
-                              :access-control-allow-origin       (re-pattern (System/getenv "FRONTEND_URL"))
-                              :access-control-allow-methods      [:get :post :patch :put :delete]
-                              :access-control-allow-credentials "true"]
+                             cors-middleware
                              cookies-middleware
                              parameters/parameters-middleware
+                             multipart/multipart-middleware
                              parameters-middleware
                              muuntaja/format-middleware
                              exception/exception-middleware

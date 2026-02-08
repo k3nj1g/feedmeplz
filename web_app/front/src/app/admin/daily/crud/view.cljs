@@ -19,9 +19,7 @@
             [app.helpers    :as h]
 
             [app.admin.daily.crud.form  :as form]
-            [app.admin.daily.crud.model :as model])
-
-  (:require-macros [ps]))
+            [app.admin.daily.crud.model :as model]))
 
 (def items-per-page 10)
 
@@ -161,7 +159,6 @@
   []
   (let [selected-items-count @(subscribe [::model/selected-items-count])
         {:keys [save]}       @(subscribe [::model/buttons])]
-    (ps/persist-scope)
     [:div.fixed.bottom-0.left-0.right-0.bg-white.shadow-lg.border-t
      [:div.max-w-6xl.mx-auto.px-4.py-4.flex.justify-between.items-center
       [:div

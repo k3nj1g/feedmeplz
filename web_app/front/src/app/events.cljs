@@ -70,7 +70,9 @@
 
 (defn make-xhrio-request
   [db request]
-  (let [token (get-in db [:auth :token])]
+  (let [token (get-in db [:auth :token])
+        body (:body request)
+        is-form-data? (instance? js/FormData body)]
     (cond-> (-> request
                 (update :uri (partial str (get-in db [:config :api-url])))
                 (merge {:timeout          8000
@@ -82,9 +84,15 @@
       token
       (assoc-in [:headers "Authorization"] (str "Bearer " token))
 
-      (#{:post :put :patch} (:method request))
+      ;; Для FormData не устанавливаем format и не преобразуем body в params
+      ;; Браузер автоматически установит правильный Content-Type с boundary
+      (and (#{:post :put :patch} (:method request)) is-form-data?)
+      (-> (dissoc :params :format)
+          (assoc :body body))
+
+      (and (#{:post :put :patch} (:method request)) (not is-form-data?))
       (-> (dissoc :body)
-          (assoc :params (:body request)
+          (assoc :params body
                  :format (ajax/json-request-format)))
 
       (= :delete (:method request))

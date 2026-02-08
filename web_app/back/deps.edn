@@ -1,11 +1,12 @@
 {:paths   ["src" "resources"]
- :deps    {org.clojure/clojure                 {:mvn/version "1.11.1"}
+ :deps    {org.clojure/clojure                 {:mvn/version "1.12.3"}
 
            buddy/buddy-hashers                 {:mvn/version "1.8.158"}
            buddy/buddy-sign                    {:mvn/version "3.4.1"}
            clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
            lynxeyes/dotenv                     {:mvn/version "1.1.0"}
            metosin/malli                       {:mvn/version "0.17.0"}
+           dk.ative/docjure                    {:mvn/version "1.22.0"}
 
            ;; HTTP server & routing
            http-kit/http-kit                   {:mvn/version "2.8.0"}
@@ -34,6 +35,9 @@
                                         ring/ring-mock  {:mvn/version "0.4.0"}
                                         kgoh/ps         {:git/url "https://github.com/KGOH/ps"
                                                          :sha     "9dff56d093a85e0d6fb47a38b685d058df68aeb6"}}}
+           :1.12-storm    {:classpath-overrides {org.clojure/clojure nil}
+                           :extra-deps          {com.github.flow-storm/clojure        {:mvn/version "1.12.3-1"}
+                                                 com.github.flow-storm/flow-storm-dbg {:mvn/version "4.5.9"}}}
            :repl/reloaded {:extra-paths ["dev"]
                            :extra-deps  {nrepl/nrepl                 {:mvn/version "1.1.0"}
                                          cider/cider-nrepl           {:mvn/version "0.45.0"}

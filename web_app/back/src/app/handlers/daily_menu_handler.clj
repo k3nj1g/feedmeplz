@@ -2,6 +2,7 @@
   "Daily Menu HTTP handlers - transforms HTTP requests to service calls
    Delegates business logic to app.services.daily-menu-service"
   (:require [app.services.daily-menu-service :as daily-menu-service]
+            [app.services.menu-import-service :as import-service]
             [app.handlers.helpers :as helpers]))
 
 
@@ -70,3 +71,28 @@
     (let [item-id (helpers/get-path-param request :item_id)]
       (helpers/service-response
         (daily-menu-service/remove-menu-item db item-id)))))
+
+;; ============================================================================
+;; Import handlers
+;; ============================================================================
+
+(defn validate-import-handler
+  "Validate Excel file for import"
+  [db]
+  (fn [request]
+    (let [file          (get-in request [:parameters :multipart :file])
+          parsed-result (import-service/parse-uploaded-file file)]
+      (if (:success parsed-result)
+        (helpers/service-response
+         (import-service/validate-import db (:data parsed-result)))
+        (helpers/service-response parsed-result)))))
+
+(defn execute-import-handler
+  "Execute import of validated menu data"
+  [db]
+  (fn [request]
+    (let [body (helpers/get-body-params request)
+          {:keys [validation-result create-new-dishes]} body
+          result (import-service/execute-import db validation-result 
+                                                 :create-new-dishes? create-new-dishes)]
+      (helpers/service-response result))))
