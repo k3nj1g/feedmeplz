@@ -177,6 +177,8 @@ poetry.toml
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 web_app/front/resources/public/js
-web_app/back/.calva/repl.calva-repl
+web_app/back/.calva
 **/node_modules/
 web_app/.portal/vs-code.edn
+.portal/
+.calva
