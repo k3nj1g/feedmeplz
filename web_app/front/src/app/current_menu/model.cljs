@@ -30,6 +30,11 @@
    (get-in db [:page :cart])))
 
 (reg-sub
+ ::item-containers
+ (fn [db _]
+   (get-in db [:page :item-containers] {})))
+
+(reg-sub
  ::menu-items
  :<- [::daily-menu]
  (fn [{:keys [items]} _]
@@ -62,7 +67,9 @@
  ::order-summary
  :<- [::cart-total]
  :<- [::items-in-cart]
- (fn [[cart-total items-in-cart] _]
+ :<- [::item-containers]
+ (fn [[cart-total items-in-cart item-containers] _]
    {:cart-total    cart-total
     :items-in-cart items-in-cart
-    :on-click      (h/action [::ctrl/copy-order-to-clipboard cart-total items-in-cart])}))
+    :item-containers item-containers
+    :on-click      (h/action [::ctrl/copy-order-to-clipboard cart-total items-in-cart item-containers])}))

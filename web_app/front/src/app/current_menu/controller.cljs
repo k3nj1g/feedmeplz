@@ -32,24 +32,38 @@
    (let [new-count (dec (get-in db [:page :cart (:id item)] 0))]
      (if (pos? new-count)
        (assoc-in db [:page :cart (:id item)] new-count)
-       (update-in db [:page :cart] dissoc (:id item))))))
+       (-> db
+           (update-in [:page :cart] dissoc (:id item))
+           (update-in [:page :item-containers] dissoc (:id item)))))))
+
+(reg-event-db
+ ::set-item-container
+ (fn [db [_ item-id container-number]]
+   (assoc-in db [:page :item-containers item-id] container-number)))
 
 (defn get-order-summary-text 
-  [cart-total items-in-cart]
-  (let [item-lines (map #(gstr/format
-                          "%s - %d шт. × %d ₽ = %d ₽"
-                          (:name %)
-                          (:quantity %)
-                          (:price %)
-                          (* (:quantity %) (:price %)))
-                        items-in-cart)]
-    (str (clojure.string/join "\n" item-lines)
+  [cart-total items-in-cart item-containers]
+  (let [items-by-container (->> items-in-cart
+                                (group-by #(get item-containers (:id %) 1))
+                                (sort-by key))
+        container-lines (map (fn [[container items]]
+                               (str "Контейнер " container ":\n"
+                                    (->> items
+                                         (map #(gstr/format
+                                                "%s - %d шт. × %d ₽ = %d ₽"
+                                                (:name %)
+                                                (:quantity %)
+                                                (:price %)
+                                                (* (:quantity %) (:price %))))
+                                         (str/join "\n"))))
+                             items-by-container)]
+    (str (str/join "\n\n" container-lines)
          "\n\nИтого: " cart-total " ₽")))
 
 (reg-event-fx
   ::copy-order-to-clipboard
-  (fn [_ [_ cart-total items-in-cart]]
-    (let [order-summary (get-order-summary-text cart-total items-in-cart)]
+  (fn [_ [_ cart-total items-in-cart item-containers]]
+    (let [order-summary (get-order-summary-text cart-total items-in-cart item-containers)]
       {:fx [[:copy-to-clipboard order-summary]
             [:dispatch [::show-copied-notification]]]})))
 

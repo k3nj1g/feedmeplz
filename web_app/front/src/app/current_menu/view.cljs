@@ -102,19 +102,32 @@
 
 (defn order-summary
   []
-  (let [{:keys [cart-total items-in-cart on-click]} @(subscribe [::model/order-summary])
+  (let [{:keys [cart-total items-in-cart item-containers on-click]} @(subscribe [::model/order-summary])
         copied? @(subscribe [:db/get [:page :copied]])]
     (when (pos? cart-total)
       [card
        [card-header
         "Сводка заказа"]
        [card-content
-        [:div.space-y-2
-         (for [item items-in-cart]
+        [:div.space-y-3
+         (for [item items-in-cart
+               :let [container-number (get item-containers (:id item) 1)]]
            ^{:key (:id item)}
-           [:div.flex.justify-between.text-sm
-            [:span (:name item) " × " (:quantity item)]
-            (str (* (:price item) (:quantity item)) " ₽")])
+           [:div.flex.flex-col.gap-2.text-sm
+            [:div.flex.justify-between
+             [:span (:name item) " × " (:quantity item)]
+             (str (* (:price item) (:quantity item)) " ₽")]
+            [:label.flex.items-center.gap-2.text-gray-600
+             [:span "Контейнер"]
+             [:select.border.rounded.px-2.py-1.text-sm.bg-white
+              {:value     container-number
+               :on-change #(dispatch [::controller/set-item-container
+                                      (:id item)
+                                      (js/Number (.. % -target -value))])}
+              (for [option-number (range 1 6)]
+                ^{:key option-number}
+                [:option {:value option-number}
+                 (str option-number)])]]])
          [:div.border-t.pt-2.mt-2.flex.justify-between.font-medium
           [:span "Итого:"]
           [:span (str cart-total " ₽")]]
