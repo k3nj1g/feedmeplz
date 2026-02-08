@@ -5,6 +5,7 @@
             [app.components.text-input :refer [text-input]]
 
             [re-frame.core :refer [dispatch subscribe]]
+            [reagent.core :as r]
 
             [app.helpers    :as h]
             [app.utils.date :as date-utils]
@@ -102,95 +103,161 @@
 
 (defn order-summary
   []
-  (let [{:keys [cart-total items-in-cart item-containers containers-mode containers-count on-click]}
-        @(subscribe [::model/order-summary])
-        copied? @(subscribe [:db/get [:page :copied]])
-        items-by-container (->> items-in-cart
-                                (group-by #(get item-containers (:id %) 1))
-                                (sort-by key))]
-    (when (pos? cart-total)
-      [card
-       [card-header
-        "Сводка заказа"]
-       [card-content
-        [:div.space-y-4
-         [:div.flex.items-center.justify-between
-          [:div.text-sm.text-gray-500
-           "Распределите блюда по контейнерам — перетащите позиции."]
-          [button
-           {:type     (if containers-mode "secondary" "primary")
-            :class    "whitespace-nowrap"
-            :on-click #(dispatch [::controller/toggle-container-mode])}
-           (if containers-mode
-             "Скрыть распределение"
-             "Распределить по контейнерам")]]
-         (if containers-mode
-           [:div.grid.gap-4.lg:grid-cols-2
-            [:div
-             [:div.text-sm.font-medium.text-gray-700.mb-2 "Позиции"]
-             [:div.space-y-2
-              (for [item items-in-cart]
-                ^{:key (:id item)}
-                [:div.flex.items-center.justify-between.text-sm.bg-gray-50.border.rounded-lg.px-3.py-2
-                 {:draggable true
-                  :on-drag-start #(do
-                                    (.setData (.-dataTransfer %) "text/plain" (str (:id item)))
-                                    (.setData (.-dataTransfer %) "application/container-item" (str (:id item))))}
-                 [:span (:name item) " × " (:quantity item)]
-                 [:span.text-gray-500 (str (* (:price item) (:quantity item)) " ₽")]])]]
-            [:div
-             [:div.flex.items-center.justify-between.mb-2
-              [:div.text-sm.font-medium.text-gray-700 "Контейнеры"]
+  (let [dragging-portion (r/atom nil)
+        drag-over-zone   (r/atom nil)]
+    (fn []
+      (let [{:keys [dishes-total items-in-cart portions containers
+                    containers-mode containers-count
+                    used-containers-count unassigned-portions-count on-click]}
+            @(subscribe [::model/order-summary])
+            copied? @(subscribe [:db/get [:page :copied]])
+            assigned-portions-count (- (count portions) unassigned-portions-count)
+            free-portions (->> portions
+                               (filter #(nil? (:container-number %)))
+                               (sort-by (juxt :name :portion-index)))
+            portions-by-container (->> portions
+                                       (remove #(nil? (:container-number %)))
+                                       (group-by :container-number))
+            containers-map (into {} (map (juxt :container-number :items) containers))
+            handle-drop (fn [event container-number]
+                          (.preventDefault event)
+                          (let [item-id (js/Number (.getData (.-dataTransfer event) "application/container-item"))
+                                portion-index (js/Number (.getData (.-dataTransfer event) "application/container-portion-index"))]
+                            (when (and (pos? item-id) (not (js/isNaN portion-index)))
+                              (dispatch [::controller/set-item-container item-id portion-index container-number]))
+                            (reset! drag-over-zone nil)
+                            (reset! dragging-portion nil)))
+            zone-class (fn [base-class zone-key]
+                         (cond-> [base-class "transition-all"]
+                           @dragging-portion (conj "border-dashed")
+                           (= @drag-over-zone zone-key) (conj "ring-2 ring-blue-400 border-blue-400 bg-blue-50")))
+            portion-chip (fn [portion]
+                           (let [dragging? (= (:portion-key portion) @dragging-portion)]
+                             ^{:key (:portion-key portion)}
+                             [:div.inline-flex.items-center.gap-1.text-xs.border.rounded-full.bg-white.px-2.py-1.cursor-grab.group.transition-all
+                              {:class (cond
+                                        dragging? "border-blue-300 bg-blue-50 opacity-60 scale-95"
+                                        :else "border-gray-200")
+                               :draggable true
+                               :on-drag-start #(do
+                                                 (reset! dragging-portion (:portion-key portion))
+                                                 (.setData (.-dataTransfer %) "application/container-item" (str (:item-id portion)))
+                                                 (.setData (.-dataTransfer %) "application/container-portion-index" (str (:portion-index portion))))
+                               :on-drag-end #(do
+                                               (reset! drag-over-zone nil)
+                                               (reset! dragging-portion nil))}
+                              [:span.text-gray-400.opacity-0.group-hover:opacity-100.transition-opacity "⋮⋮"]
+                              [:span (:name portion)]
+                              [:span.text-gray-400.pr-1 (str "#" (inc (:portion-index portion)))]]))]
+        (when (pos? dishes-total)
+          [card
+           [card-header
+            "Сводка заказа"]
+           [card-content
+            [:div.space-y-4
+             [:div.flex.items-center.justify-between
+              [:div.text-sm.text-gray-500
+               "Контейнеры необязательны. Распределяйте порции только при необходимости."]
               [button
-               {:type     "secondary"
-                :class    "text-xs px-2 py-1"
-                :on-click #(dispatch [::controller/add-container])}
-               "+ Контейнер"]]
-             [:div.space-y-3
-              (for [container-number (range 1 (inc containers-count))]
-                ^{:key container-number}
-                [:div.border.rounded-lg.p-3.bg-white.min-h-110px
-                 {:on-drag-over #(.preventDefault %)
-                  :on-drop #(let [item-id (js/Number (.getData (.-dataTransfer %) "application/container-item"))]
-                              (when (pos? item-id)
-                                (dispatch [::controller/set-item-container item-id container-number])))}
-                 [:div.flex.items-center.justify-between.mb-2
-                  [:span.font-medium (str "Контейнер " container-number)]
-                  [:span.text-xs.text-gray-400 "Drop"]]
-                 (if-let [container-items (seq (get (into {} items-by-container) container-number))]
-                   [:div.space-y-1
-                    (for [item container-items]
-                      ^{:key (:id item)}
-                      [:div.text-xs.text-gray-700.flex.justify-between
-                       [:span (:name item) " × " (:quantity item)]
-                       [:span (str (* (:price item) (:quantity item)) " ₽")]])]
-                   [:div.text-xs.text-gray-400 "Перетащите блюда сюда"])])]]]
-           [:div.space-y-2
-            (for [[container-number container-items] items-by-container]
-              ^{:key container-number}
-              [:div
-               [:div.text-xs.uppercase.tracking-wide.text-gray-400.mb-1
-                (str "Контейнер " container-number)]
-               [:div.space-y-1
-                (for [item container-items]
+               {:type     (if containers-mode "secondary" "primary")
+                :class    "whitespace-nowrap"
+                :on-click #(dispatch [::controller/toggle-container-mode])}
+               (if containers-mode
+                 "Скрыть распределение"
+                 "Распределить по контейнерам")]]
+             (if containers-mode
+               [:<>
+                [:div.flex.flex-wrap.items-center.justify-between.gap-2.bg-gray-50.border.rounded-lg.p-3.text-sm
+                 [:div.flex.flex-wrap.items-center.gap-2
+                  [:span.text-gray-600 "Контейнеров: " [:span.font-medium used-containers-count]]
+                  [:span.text-gray-600 "Распределено порций: " [:span.font-medium assigned-portions-count]]
+                  [:span.text-gray-600 "Свободных: " [:span.font-medium unassigned-portions-count]]]
+                 [button
+                  {:type     "secondary"
+                   :class    "text-xs px-2 py-1"
+                   :disabled (zero? assigned-portions-count)
+                   :on-click #(dispatch [::controller/clear-container-assignments])}
+                  "Сбросить распределение"]]
+                [:div.text-xs.text-gray-500
+                 "Подсказка: перетяните порцию по маркеру ⋮⋮ в нужную зону."]
+                [:div.grid.gap-4.lg:grid-cols-2
+                 [:div
+                  {:class       (zone-class "border rounded-lg p-3 bg-amber-50 min-h-110px" :free)
+                   :on-drag-over #(do
+                                    (.preventDefault %)
+                                    (reset! drag-over-zone :free))
+                   :on-drop     #(handle-drop % nil)}
+                  [:div.flex.items-center.justify-between.mb-2
+                   [:span.text-sm.font-medium "Не распределено"]
+                   [:span.text-xs.text-gray-500 (str (count free-portions) " шт")]]
+                  (if (seq free-portions)
+                    [:div.flex.flex-wrap.gap-2
+                     (for [portion free-portions]
+                       (portion-chip portion))]
+                    [:div.text-xs.text-gray-500 "Перетащите сюда порции, которые не нужно класть в контейнер"])]
+                 [:div.space-y-3
+                  (doall
+                   (for [container-number (range 1 (inc containers-count))]
+                     (let [container-portions (sort-by (juxt :name :portion-index)
+                                                       (get portions-by-container container-number []))
+                           container-summary  (get containers-map container-number)]
+                       ^{:key container-number}
+                       [:div
+                        {:class       (zone-class "border rounded-lg p-3 bg-white min-h-110px" [:container container-number])
+                         :on-drag-over #(do
+                                          (.preventDefault %)
+                                          (reset! drag-over-zone [:container container-number]))
+                         :on-drop     #(handle-drop % container-number)}
+                        [:div.flex.items-center.justify-between.mb-2
+                         [:span.font-medium (str "Контейнер " container-number)]
+                         [:div.flex.items-center.gap-2
+                          [:span.text-xs.text-gray-500 (str (count container-portions) " шт")]
+                          (when (> containers-count 1)
+                            [button
+                             {:type     "secondary"
+                              :class    "text-xs px-2 py-1"
+                              :on-click #(dispatch [::controller/remove-container container-number])}
+                             "Удалить"])]]
+                        (if (seq container-portions)
+                          [:<>
+                           [:div.flex.flex-wrap.gap-2.mb-2
+                            (for [portion container-portions]
+                              (portion-chip portion))]
+                           [:div.space-y-1
+                            (for [item container-summary]
+                              ^{:key (:item-id item)}
+                              [:div.text-xs.text-gray-700.flex.justify-between
+                               [:span (:name item) " × " (:quantity item)]
+                               [:span (str (controller/format-rub (:line-total item)) " ₽")]])]]
+                          [:div.text-xs.text-gray-400 "Перетащите порции сюда"])])))
+                  [:div.flex.items-center.justify-between
+                   [:div]
+                   [button
+                    {:type     "secondary"
+                     :class    "text-xs px-2 py-1"
+                     :on-click #(dispatch [::controller/add-container])}
+                    "+ Контейнер"]]]]]
+               [:div.space-y-2
+                (for [item items-in-cart]
                   ^{:key (:id item)}
                   [:div.flex.justify-between.text-sm
                    [:span (:name item) " × " (:quantity item)]
-                   (str (* (:price item) (:quantity item)) " ₽")])]])])
-         [:div.border-t.pt-2.mt-2.flex.justify-between.font-medium
-          [:span "Итого:"]
-          [:span (str cart-total " ₽")]]
-         [button
-          {:type     (if copied? "success" "primary")
-           :class    "w-full"
-           :on-click on-click}
-          (if copied?
-            [:<>
-             [:> Check {:class "h-4 w-4 mr-2"}]
-             "Скопировано!"]
-            [:<>
-             [:> Copy {:class "h-4 w-4 mr-2"}]
-             "Копировать заказ"])]]]])))
+                   [:span (str (controller/format-rub (* (:quantity item) (:price item))) " ₽")]])])
+             [:div.border-t.pt-2.mt-2.space-y-1
+              [:div.flex.justify-between.font-medium
+               [:span "Итого:"]
+               [:span (str (controller/format-rub dishes-total) " ₽")]]]
+             [button
+              {:type     (if copied? "success" "primary")
+               :class    "w-full"
+               :on-click on-click}
+              (if copied?
+                [:<>
+                 [:> Check {:class "h-4 w-4 mr-2"}]
+                 "Скопировано!"]
+                [:<>
+                 [:> Copy {:class "h-4 w-4 mr-2"}]
+                 "Копировать заказ"])]]]])))))
 
 (defn empty-state
   []

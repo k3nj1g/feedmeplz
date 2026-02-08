@@ -42,7 +42,7 @@
 (reg-sub
  ::containers-count
  (fn [db _]
-   (get-in db [:page :containers-count] 2)))
+   (get-in db [:page :containers-count] 1)))
 
 (reg-sub
  ::menu-items
@@ -81,9 +81,21 @@
  :<- [::containers-mode]
  :<- [::containers-count]
  (fn [[cart-total items-in-cart item-containers containers-mode containers-count] _]
-   {:cart-total    cart-total
-    :items-in-cart items-in-cart
-    :item-containers item-containers
-    :containers-mode containers-mode
-    :containers-count containers-count
-    :on-click      (h/action [::ctrl/copy-order-to-clipboard cart-total items-in-cart item-containers])}))
+   (let [{:keys [portions containers without-container-items
+                 used-containers-count unassigned-portions-count]}
+         (ctrl/build-container-summary items-in-cart item-containers)]
+     {:dishes-total              cart-total
+      :items-in-cart             items-in-cart
+      :portions                  portions
+      :containers                containers
+      :without-container-items   without-container-items
+      :used-containers-count     used-containers-count
+      :unassigned-portions-count unassigned-portions-count
+      :item-containers           item-containers
+      :containers-mode           containers-mode
+      :containers-count          containers-count
+      :on-click                  (h/action [::ctrl/copy-order-to-clipboard
+                                            cart-total
+                                            items-in-cart
+                                            item-containers
+                                            containers-mode])})))
