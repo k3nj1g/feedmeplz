@@ -149,7 +149,7 @@
              [:div.space-y-3
               (for [container-number (range 1 (inc containers-count))]
                 ^{:key container-number}
-                [:div.border.rounded-lg.p-3.bg-white.min-h-[110px]
+                [:div.border.rounded-lg.p-3.bg-white.min-h-110px
                  {:on-drag-over #(.preventDefault %)
                   :on-drop #(let [item-id (js/Number (.getData (.-dataTransfer %) "application/container-item"))]
                               (when (pos? item-id)
