@@ -46,6 +46,11 @@
  (fn [db _]
    (update-in db [:page :containers-mode] not)))
 
+(reg-event-db
+ ::add-container
+ (fn [db _]
+   (update-in db [:page :containers-count] (fnil inc 2))))
+
 (defn get-order-summary-text 
   [cart-total items-in-cart item-containers]
   (let [items-by-container (->> items-in-cart

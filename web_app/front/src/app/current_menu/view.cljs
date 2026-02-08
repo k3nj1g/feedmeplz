@@ -102,7 +102,8 @@
 
 (defn order-summary
   []
-  (let [{:keys [cart-total items-in-cart item-containers containers-mode on-click]} @(subscribe [::model/order-summary])
+  (let [{:keys [cart-total items-in-cart item-containers containers-mode containers-count on-click]}
+        @(subscribe [::model/order-summary])
         copied? @(subscribe [:db/get [:page :copied]])
         items-by-container (->> items-in-cart
                                 (group-by #(get item-containers (:id %) 1))
@@ -138,9 +139,15 @@
                  [:span (:name item) " × " (:quantity item)]
                  [:span.text-gray-500 (str (* (:price item) (:quantity item)) " ₽")]])]]
             [:div
-             [:div.text-sm.font-medium.text-gray-700.mb-2 "Контейнеры"]
-             [:div.grid.gap-3.sm:grid-cols-2
-              (for [container-number (range 1 6)]
+             [:div.flex.items-center.justify-between.mb-2
+              [:div.text-sm.font-medium.text-gray-700 "Контейнеры"]
+              [button
+               {:type     "secondary"
+                :class    "text-xs px-2 py-1"
+                :on-click #(dispatch [::controller/add-container])}
+               "+ Контейнер"]]
+             [:div.space-y-3
+              (for [container-number (range 1 (inc containers-count))]
                 ^{:key container-number}
                 [:div.border.rounded-lg.p-3.bg-white.min-h-[110px]
                  {:on-drag-over #(.preventDefault %)
