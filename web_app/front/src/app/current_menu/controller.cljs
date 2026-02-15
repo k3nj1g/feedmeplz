@@ -238,7 +238,7 @@
                             nil)]
     (str (if containers-mode
            (str/join "\n\n" sections)
-           (str "Позиции:\n" items-lines))
+           items-lines)
          "\n\nИтого: "
          (format-rub total)
          " ₽")))
